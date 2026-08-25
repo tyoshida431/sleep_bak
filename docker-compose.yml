@@ -1,0 +1,14 @@
+services:
+  app:
+    container_name: sleep-bak-go  # コンテナの名前を指定
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    tty: true  # コンテナを終了させない
+    restart: always
+    volumes:
+      - ./app:/go/src/app  # ホストのappフォルダをコンテナにマウント
+    ports:
+      - 7070:7070  # ローカルホストとコンテナのポートをバインド
+    environment:
+      - TZ=Asia/Tokyo    
