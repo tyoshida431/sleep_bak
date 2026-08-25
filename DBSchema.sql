@@ -1,8 +1,6 @@
 CREATE DATABASE EC;
 USE EC;
 
-create user 'ec'@'%' identified by 'y7CW6lYvqc';
-
 GRANT SELECT, INSERT, UPDATE, DELETE ON EC.* TO 'ec'@'%';
 
 CREATE TABLE PRODUCT(
