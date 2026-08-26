@@ -1,12 +1,17 @@
 package main
 
 import (
+  //"log"
   "github.com/gin-gonic/gin"
 )
 
 func main() {
   // Ginのルーターを作成
-  router := gin.Default()
+  router:=gin.Default()
+  cors,err:=corsMiddleware()
+  if err==nil{
+    router.Use(cors)
+  }
 
   // ルートエンドポイントを定義し、Hello Worldを返す
   router.GET("/", func(c *gin.Context) {
