@@ -13,13 +13,12 @@ func main() {
 	if err == nil {
 		router.Use(cors)
 	}
-	// TODO : Sleepモジュールを作って呼びます。
-	// TODO : クエリの取得からです。
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "Hello World",
 		})
 	})
+	// TODO : Sleepモジュールを作って呼びます。
 	router.GET("/sleep", func(c *gin.Context) {
 		month := c.Query("month")
 		log.Println(month)
