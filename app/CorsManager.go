@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 type URL struct {
@@ -24,14 +25,25 @@ func loadAllowOrigins() ([]string, error) {
 		log.Fatal("loadConfig os.Open Error:", err)
 		return nil, err
 	}
-	defer file.Close()
-	jsonData, err := ioutil.ReadAll(file)
+	defer func() {
+		fileCloseErr := file.Close()
+		if fileCloseErr != nil {
+			log.Fatal("File Close Error:", err)
+			return
+		}
+		err = fileCloseErr
+	}()
+	jsonData, err := io.ReadAll(file)
 	if err != nil {
 		log.Fatal("ioutil.ReadAll Error:", err)
 		return nil, err
 	}
 	var conf Config
-	json.Unmarshal(jsonData, &conf)
+	err = json.Unmarshal(jsonData, &conf)
+	if err != nil {
+		log.Fatal("json Unmarshal Error:", err)
+		return nil, err
+	}
 	for _, url := range conf.APICorsAllowOrigins {
 		retUrls = append(retUrls, url.Url)
 	}

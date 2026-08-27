@@ -1,11 +1,13 @@
 package main
 
 import (
-	//"log"
+	"log"
+
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	var err error
 	// Ginのルーターを作成
 	router := gin.Default()
 	cors, err := getCorsConfig()
@@ -21,5 +23,8 @@ func main() {
 	})
 
 	// ポート7070でサーバーを起動
-	router.Run(":7070")
+	err = router.Run(":7070")
+	if err != nil {
+		log.Fatal("Cannot Run Server Error:", err)
+	}
 }
