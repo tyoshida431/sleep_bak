@@ -86,14 +86,14 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 			&sleep.Deep_sleep,
 			&sleep.Description); err != nil {
 			log.Println(err)
-			return nil, fmt.Errorf("scan the sale error: %v", err)
+			return nil, fmt.Errorf("scan the sleep error: %v", err)
 		}
 		sleep.DateStr = changeDateString(sleep.Date)
 		sleeps = append(sleeps, sleep)
 	}
 	if err := sleepRows.Err(); err != nil {
 		log.Println(err)
-		return nil, fmt.Errorf("scan home sale error: %v", err)
+		return nil, fmt.Errorf("scan sleep error: %v", err)
 	}
 	return sleeps, err
 }
