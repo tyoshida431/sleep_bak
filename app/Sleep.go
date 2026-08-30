@@ -10,6 +10,7 @@ import (
 type Sleep struct {
 	ID          int    `json:"id"`
 	Date        string `json:"date"`
+	DateStr     string `json:"date_str"`
 	Wake        int    `json:"wake"`
 	Bath        int    `json:"bath"`
 	Bed         int    `json:"bed"`
@@ -19,7 +20,7 @@ type Sleep struct {
 	Description string `json:"description"`
 }
 
-func getSleep(month string) ([]Sleep, error) {
+func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	var sleeps []Sleep
 	db, err := dbConnect()
 	if err != nil {
@@ -36,9 +37,9 @@ func getSleep(month string) ([]Sleep, error) {
 	}()
 
 	// yyyymmの形で入ってきます。
-	monthScope := getNowMonth(month)
-	startDay := getStartDay(monthScope)
-	endDay := getEndDay(monthScope)
+	month := getNowMonth(monthFromURLQuery)
+	startDay := getStartDay(month)
+	endDay := getEndDay(month)
 	//log.Println("startDay : ")
 	//log.Println(startDay)
 	//log.Println("endDay :")
@@ -87,6 +88,7 @@ func getSleep(month string) ([]Sleep, error) {
 			log.Println(err)
 			return nil, fmt.Errorf("scan the sale error: %v", err)
 		}
+		sleep.DateStr = changeDateString(sleep.Date)
 		sleeps = append(sleeps, sleep)
 	}
 	if err := sleepRows.Err(); err != nil {
@@ -95,22 +97,23 @@ func getSleep(month string) ([]Sleep, error) {
 	}
 	return sleeps, err
 }
-func getNowMonth(month string) (monthScope string) {
-	var ret string
+func changeDateString(dateStringFromDB string) (dateStringToJSON string) {
+	return dateStringFromDB[:10]
+}
+func getNowMonth(monthFromURLQuery string) (month string) {
 	now := time.Now()
-	if month == "" {
-		ret = now.Format("2006-01-02")
+	if monthFromURLQuery == "" {
+		month = now.Format("2006-01-02")
 	} else {
 		// yyyymmの形決め打ちで作成する。
-		tmpYearStr := month[:4]
-		tmpMonthStr := month[4:]
+		tmpYearStr := monthFromURLQuery[:4]
+		tmpMonthStr := monthFromURLQuery[4:]
 		tmpYearNum, err := strconv.Atoi(tmpYearStr)
 		if err != nil {
 			log.Fatal("Year Conv Error: ", err)
 			log.Fatal("Error Year Str: ", tmpYearStr)
 			return
 		}
-		// TODO
 		tmpMonthNum, err := strconv.Atoi(tmpMonthStr)
 		if err != nil {
 			log.Fatal("Month Conv Error: ", err)
@@ -121,10 +124,10 @@ func getNowMonth(month string) (monthScope string) {
 		//log.Println(tmpMonthStr)
 		//log.Println(tmpYearNum)
 		//log.Println(tmpMonthNum)
-		ret = time.Date(tmpYearNum, time.Month(tmpMonthNum), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
+		month = time.Date(tmpYearNum, time.Month(tmpMonthNum), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
 	}
-	log.Println(ret)
-	return ret
+	log.Println(month)
+	return month
 }
 func getStartDay(month string) (startDay time.Time) {
 	now := time.Now()
