@@ -38,6 +38,7 @@ func dbConnect() (*sqlx.DB, error) {
 		Addr:                 dbAddr,
 		DBName:               dbName,
 		AllowNativePasswords: true,
+		ParseTime:            true,
 	}
 
 	// データベースを開く

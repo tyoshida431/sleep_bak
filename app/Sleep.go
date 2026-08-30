@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -33,35 +35,34 @@ func getSleep(month string) ([]Sleep, error) {
 		err = dbCloseErr
 	}()
 
-	if month == "" {
-		month = getNowMonth()
+	// yyyymmの形で入ってきます。
+	monthScope := getNowMonth(month)
+	startDay := getStartDay(monthScope)
+	endDay := getEndDay(monthScope)
+	//log.Println("startDay : ")
+	//log.Println(startDay)
+	//log.Println("endDay :")
+	//log.Println(endDay)
+	query := `
+	  SELECT
+	    id,
+	    date,
+	    wake,
+	    bath,
+	    bed,
+	    sleep_in,
+	    sleep,
+	    deep_sleep,
+	    description
+	  FROM
+	    sleeps
+	  WHERE
+	    date>=? AND date<=?`
+	sleepRows, err := db.Query(query, startDay, endDay)
+	if err != nil {
+		log.Println(err)
+		return nil, fmt.Errorf("query error: %v", err)
 	}
-	startDay := getStartDay(month)
-	endDay := getEndDay(month)
-	log.Println("startDay : ")
-	log.Println(startDay)
-	log.Println("endDay :")
-	log.Println(endDay)
-	// query := `
-	//   SELECT
-	//     id,
-	//     date,
-	//     wake,
-	//     bath,
-	//     bed,
-	//     sleep_in,
-	//     sleep,
-	//     deep_sleep,
-	//     description,
-	//   FROM
-	//     sleeps
-	//   WHERE
-	//     date>=? AND date<=?;`
-	// sleepRows, err := db.Query(query, startDay, endDay)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return nil, fmt.Errorf("query error: %v", err)
-	// }
 	// //ID          int    `json:"id"`
 	// //Date        string `json:"date"`
 	// //Wake        string `json:"wake"`
@@ -71,31 +72,59 @@ func getSleep(month string) ([]Sleep, error) {
 	// //Sleep       string `json:"sleep"`
 	// //Deep_sleep  string `json:"deep_sleep"`
 	// //Description string `json:"description"`
-	// for sleepRows.Next() {
-	// 	var sleep Sleep
-	// 	if err := sleepRows.Scan(
-	// 		&sleep.ID,
-	// 		&sleep.Date,
-	// 		&sleep.Wake,
-	// 		&sleep.Bath,
-	// 		&sleep.Bed,
-	// 		&sleep.Sleep_in,
-	// 		&sleep.Sleep,
-	// 		&sleep.Deep_sleep,
-	// 		&sleep.Description); err != nil {
-	// 		log.Println(err)
-	// 		return nil, fmt.Errorf("scan the sale error: %v", err)
-	// 	}
-	// 	sleeps = append(sleeps, sleep)
-	// }
-	// if err := sleepRows.Err(); err != nil {
-	// 	log.Println(err)
-	// 	return nil, fmt.Errorf("scan home sale error: %v", err)
-	// }
+	for sleepRows.Next() {
+		var sleep Sleep
+		if err := sleepRows.Scan(
+			&sleep.ID,
+			&sleep.Date,
+			&sleep.Wake,
+			&sleep.Bath,
+			&sleep.Bed,
+			&sleep.Sleep_in,
+			&sleep.Sleep,
+			&sleep.Deep_sleep,
+			&sleep.Description); err != nil {
+			log.Println(err)
+			return nil, fmt.Errorf("scan the sale error: %v", err)
+		}
+		sleeps = append(sleeps, sleep)
+	}
+	if err := sleepRows.Err(); err != nil {
+		log.Println(err)
+		return nil, fmt.Errorf("scan home sale error: %v", err)
+	}
 	return sleeps, err
 }
-func getNowMonth() (month string) {
-	return time.Now().Format("2006-01-02")
+func getNowMonth(month string) (monthScope string) {
+	var ret string
+	now := time.Now()
+	if month == "" {
+		ret = now.Format("2006-01-02")
+	} else {
+		// yyyymmの形決め打ちで作成する。
+		tmpYearStr := month[:4]
+		tmpMonthStr := month[4:]
+		tmpYearNum, err := strconv.Atoi(tmpYearStr)
+		if err != nil {
+			log.Fatal("Year Conv Error: ", err)
+			log.Fatal("Error Year Str: ", tmpYearStr)
+			return
+		}
+		// TODO
+		tmpMonthNum, err := strconv.Atoi(tmpMonthStr)
+		if err != nil {
+			log.Fatal("Month Conv Error: ", err)
+			log.Fatal("Error Month Str: ", tmpMonthStr)
+			return
+		}
+		//log.Println(tmpYearStr)
+		//log.Println(tmpMonthStr)
+		//log.Println(tmpYearNum)
+		//log.Println(tmpMonthNum)
+		ret = time.Date(tmpYearNum, time.Month(tmpMonthNum), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
+	}
+	log.Println(ret)
+	return ret
 }
 func getStartDay(month string) (startDay time.Time) {
 	now := time.Now()
