@@ -1,0 +1,59 @@
+openapi: 3.0.0
+  info:
+    title: Sleep API
+    description: Sleep API.
+    version: 1.0.0
+  servers:
+    - url: http://xxx/v1
+      description: version 1.
+  paths:
+    /sleep:
+      get:
+        tags:
+          - home.
+        summary: 睡眠一覧。
+        description: 睡眠一覧を取得する。
+        parameters: []
+        responces:
+          '200':
+            description: 睡眠一覧。
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '??/Sleep'
+                  example:
+                    - id: 853
+                      date: 2026-08-01
+                      wake: 160
+                      bath: 8
+                      bed: 98
+                      sleep_in: -
+                      sleep: 08:02:00
+                      deep_sleep: 02:00:00
+                      description: 電気をつけたまま寝てしまったので深い睡眠が深夜に出なかったかもです。電気を消して寝ます。3h出せると思ったのですが。まあぽちぽちで進めます。
+                    - id: 854
+                      date: 2026-08-02
+                      wake: 194
+                      bath: 153
+                      bed: 243
+                      sleep_in: -
+                      sleep: 03:27:00
+                      deep_sleep: 00:00:00
+                      description: 暑くて起きてしまったのでそのまま起きました。続いて散歩して深い睡眠を3h出します。
+          '500':
+            description: エラー時。
+            content:
+              application/json:
+                schema:
+                  type: object
+                  items:
+                    $ref: '??/Error'
+                  example:
+                    id: 1
+                    message: サーバー内部でエラーが発生しました。時間を置いてアクセスして下さい。
+  tags:
+    - name: sleep
+      description: 睡眠一覧。
+

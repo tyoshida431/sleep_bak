@@ -18,16 +18,15 @@ func main() {
 			"message": "Hello World",
 		})
 	})
-	// TODO : Sleepモジュールを作って呼びます。
 	router.GET("/sleep", func(c *gin.Context) {
 		month := c.Query("month")
 		log.Println(month)
-		//data, err := getSleep()
-		//if err == nil {
-		//	c.JSON(200, data)
-		//} else {
-		//	c.JSON(500, gin.H{"message": "サーバー内部でエラーが発生しました"})
-		//}
+		data, err := getSleep(month)
+		if err == nil {
+			c.JSON(200, data)
+		} else {
+			c.JSON(500, gin.H{"message": "サーバー内部でエラーが発生しました"})
+		}
 	})
 	err = router.Run(":7070")
 	if err != nil {
