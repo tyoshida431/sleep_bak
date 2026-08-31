@@ -5,6 +5,8 @@ import (
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type Sleep struct {
@@ -40,10 +42,12 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	month := getNowMonth(monthFromURLQuery)
 	startDay := getStartDay(month)
 	endDay := getEndDay(month)
-	//log.Println("startDay : ")
-	//log.Println(startDay)
-	//log.Println("endDay :")
-	//log.Println(endDay)
+	// TODO : なかったらINSERTする関数を書きます。
+	err = makeNewMonth(db, startDay, endDay)
+	if err != nil {
+		log.Fatal("Make New Month Error:", err)
+		return nil, err
+	}
 	query := `
 	  SELECT
 	    id,
@@ -61,7 +65,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	    date>=? AND date<=?`
 	sleepRows, err := db.Query(query, startDay, endDay)
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 		return nil, fmt.Errorf("query error: %v", err)
 	}
 	// //ID          int    `json:"id"`
@@ -97,6 +101,30 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	}
 	return sleeps, err
 }
+func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
+	var err error
+	query := `
+		SELECT
+			COUNT(*)
+		FROM
+			sleeps
+	    WHERE
+	    	date>=? AND date<=?`
+	countRows, err := db.Query(query, startDay, endDay)
+	if err != nil {
+		log.Fatal(err)
+		return fmt.Errorf("query error: %v", err)
+	}
+	var count int
+	if err := countRows.Scan(&count); err != nil {
+		log.Fatal(err)
+		return fmt.Errorf("scan the count error: %v", err)
+	}
+	if count == 0 {
+		// TODO : INSERTします。
+	}
+	return err
+}
 func changeDateString(dateStringFromDB string) (dateStringToJSON string) {
 	return dateStringFromDB[:10]
 }
@@ -120,10 +148,6 @@ func getNowMonth(monthFromURLQuery string) (month string) {
 			log.Fatal("Error Month Str: ", tmpMonthStr)
 			return
 		}
-		//log.Println(tmpYearStr)
-		//log.Println(tmpMonthStr)
-		//log.Println(tmpYearNum)
-		//log.Println(tmpMonthNum)
 		month = time.Date(tmpYearNum, time.Month(tmpMonthNum), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
 	}
 	log.Println(month)
