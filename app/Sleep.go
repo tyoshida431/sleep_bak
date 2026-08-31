@@ -40,7 +40,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	}()
 
 	// yyyymmの形で入って来るのを決め打ちします。
-	month := getMonth(monthFromURLQuery)
+	month := shapeMonth(monthFromURLQuery)
 	startDay := getStartDay(month)
 	endDay := getEndDay(month)
 	err = makeNewMonth(db, startDay, endDay)
@@ -179,10 +179,10 @@ func makeDayForInsert(year int, month int, day int) time.Time {
 	now := time.Now()
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
 }
-func changeDateString(dateStringFromDB string) (dateStringToJSON string) {
+func changeDateString(dateStringFromDB string) (dateStringToDisp string) {
 	return dateStringFromDB[:10]
 }
-func getMonth(monthFromURLQuery string) (month string) {
+func shapeMonth(monthFromURLQuery string) (month string) {
 	now := time.Now()
 	if monthFromURLQuery == "" {
 		month = now.Format("2006-01-02")
