@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -38,11 +39,10 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 		err = dbCloseErr
 	}()
 
-	// yyyymmの形で入ってきます。
-	month := getNowMonth(monthFromURLQuery)
+	// yyyymmの形で入って来るのを決め打ちします。
+	month := getMonth(monthFromURLQuery)
 	startDay := getStartDay(month)
 	endDay := getEndDay(month)
-	// TODO : なかったらINSERTする関数を書きます。
 	err = makeNewMonth(db, startDay, endDay)
 	if err != nil {
 		log.Fatal("Make New Month Error:", err)
@@ -96,39 +96,94 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 		sleeps = append(sleeps, sleep)
 	}
 	if err := sleepRows.Err(); err != nil {
-		log.Println(err)
+		log.Fatal(err)
 		return nil, fmt.Errorf("scan sleep error: %v", err)
 	}
 	return sleeps, err
 }
 func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
-	var err error
-	query := `
+	countQuery := `
 		SELECT
 			COUNT(*)
 		FROM
 			sleeps
 	    WHERE
 	    	date>=? AND date<=?`
-	countRows, err := db.Query(query, startDay, endDay)
+	countRows, err := db.Query(countQuery, startDay, endDay)
 	if err != nil {
 		log.Fatal(err)
 		return fmt.Errorf("query error: %v", err)
 	}
 	var count int
-	if err := countRows.Scan(&count); err != nil {
-		log.Fatal(err)
-		return fmt.Errorf("scan the count error: %v", err)
+	for countRows.Next() {
+		if err := countRows.Scan(&count); err != nil {
+			log.Fatal(err)
+			return fmt.Errorf("scan the count error: %v", err)
+		}
 	}
 	if count == 0 {
 		// TODO : INSERTします。
+		year := startDay.Year()
+		month := int(startDay.Month())
+		dayNum := startDay.Day()
+		endDayNum := endDay.Day()
+		now := time.Now()
+		insertQuery := `
+			INSERT INTO sleeps(
+				date,
+				wake,
+				bath,
+				bed,
+				sleep_in,
+				sleep,
+				deep_sleep,
+				description,
+				created_at,
+				updated_at
+			) VALUES `
+		var placeHolders []string
+		var vals []interface{}
+		for insertDayNum := dayNum; insertDayNum <= endDayNum; insertDayNum++ {
+			//log.Println(year)
+			//log.Println(month)
+			log.Println(insertDayNum)
+			//log.Println(endDayNum)
+			placeHolders = append(placeHolders, "(?,?,?,?,?,?,?,?,?,?)")
+			vals = append(
+				vals,
+				makeDayForInsert(year, month, insertDayNum),
+				0,
+				0,
+				0,
+				"",
+				"",
+				"",
+				"",
+				now,
+				now)
+			dayNum++
+		}
+		insertQuery += strings.Join(placeHolders, ", ")
+		log.Println(insertQuery)
+		log.Println(placeHolders)
+		result, err := db.Exec(insertQuery, vals...)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+		rows, _ := result.RowsAffected()
+		fmt.Printf("登録に成功した件数: %d\n", rows)
 	}
 	return err
+}
+func makeDayForInsert(year int, month int, day int) time.Time {
+	now := time.Now()
+	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
 }
 func changeDateString(dateStringFromDB string) (dateStringToJSON string) {
 	return dateStringFromDB[:10]
 }
-func getNowMonth(monthFromURLQuery string) (month string) {
+func getMonth(monthFromURLQuery string) (month string) {
 	now := time.Now()
 	if monthFromURLQuery == "" {
 		month = now.Format("2006-01-02")
@@ -136,6 +191,14 @@ func getNowMonth(monthFromURLQuery string) (month string) {
 		// yyyymmの形決め打ちで作成する。
 		tmpYearStr := monthFromURLQuery[:4]
 		tmpMonthStr := monthFromURLQuery[4:]
+		if len(tmpYearStr) != 4 {
+			log.Fatal("Invalid Year: ", tmpYearStr)
+			return
+		}
+		if len(tmpMonthStr) != 2 {
+			log.Fatal("Invalid Month: ", tmpMonthStr)
+			return
+		}
 		tmpYearNum, err := strconv.Atoi(tmpYearStr)
 		if err != nil {
 			log.Fatal("Year Conv Error: ", err)
@@ -160,6 +223,7 @@ func getStartDay(month string) (startDay time.Time) {
 	if err != nil {
 		log.Fatal("first Day Parse Error:", err)
 		log.Fatal("Fatal Date:", tmpMonth)
+		return
 	}
 	firstDay := time.Date(monthDay.Year(), monthDay.Month(), 1, 0, 0, 0, 0, now.Location())
 	return firstDay
@@ -171,6 +235,7 @@ func getEndDay(month string) (startDay time.Time) {
 	if err != nil {
 		log.Fatal("last Day Parse Error:", err)
 		log.Fatal("Fatal Date:", tmpMonth)
+		return
 	}
 	lastDay := time.Date(monthDay.Year(), monthDay.Month(), 1, 23, 59, 59, 0, now.Location()).AddDate(0, 1, -1)
 	return lastDay

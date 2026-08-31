@@ -4,6 +4,7 @@ import (
 	//"database/sql"
 	"log"
 	"os"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -23,6 +24,11 @@ func dbConnect() (*sqlx.DB, error) {
 		log.Fatal("Error open .env file:", err)
 		return nil, err
 	}
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		log.Fatal("タイムゾーンの読み込みに失敗しました: %v", err)
+		return nil, err
+	}
 
 	// 環境変数を変数に格納する
 	dbUser := os.Getenv("DB_USER")
@@ -38,6 +44,7 @@ func dbConnect() (*sqlx.DB, error) {
 		Addr:                 dbAddr,
 		DBName:               dbName,
 		AllowNativePasswords: true,
+		Loc:                  jst,
 		ParseTime:            true,
 	}
 
