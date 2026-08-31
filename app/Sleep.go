@@ -122,7 +122,6 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 		}
 	}
 	if count == 0 {
-		// TODO : INSERTします。
 		year := startDay.Year()
 		month := int(startDay.Month())
 		dayNum := startDay.Day()

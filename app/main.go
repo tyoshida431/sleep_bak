@@ -20,7 +20,6 @@ func main() {
 	})
 	router.GET("/sleep", func(c *gin.Context) {
 		month := c.Query("month")
-		log.Println(month)
 		data, err := getSleep(month)
 		if err == nil {
 			c.JSON(200, data)
