@@ -191,6 +191,23 @@ func makeDayForInsert(year int, month int, day int) time.Time {
 func updateSleep(updateSleeps []SleepFromFront) (retSleeps []Sleep, err error) {
 	log.Println(updateSleeps)
 	// TODO : ロジックを書きます。
+	//now := time.Now()
+	//updateQuery := `
+	//	INSERT INTO sleeps(
+	//		date,
+	//		wake,
+	//		bath,
+	//		bed,
+	//		sleep_in,
+	//		sleep,
+	//		deep_sleep,
+	//		description,
+	//		created_at,
+	//		updated_at
+	//	) VALUES `
+	//var placeHolders []string
+	//var vals []interface{}
+
 	return retSleeps, err
 }
 func changeDateString(dateStringFromDB string) (dateStringToDisp string) {
