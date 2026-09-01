@@ -26,7 +26,7 @@ func dbConnect() (*sqlx.DB, error) {
 	}
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
-		log.Fatal("タイムゾーンの読み込みに失敗しました: %v", err)
+		log.Fatal("タイムゾーンの読み込みに失敗しました: ", err)
 		return nil, err
 	}
 

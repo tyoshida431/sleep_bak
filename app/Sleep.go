@@ -23,6 +23,19 @@ type Sleep struct {
 	Description string `json:"description"`
 }
 
+type SleepFromFront struct {
+	ID          int    `json:"id"`
+	Date        string `json:"date"`
+	DateStr     string `json:"date_str"`
+	Wake        int    `json:"wake"`
+	Bath        int    `json:"bath"`
+	Bed         int    `json:"bed"`
+	Sleep_in    string `json:"sleep_in"`
+	Sleep       string `json:"sleep"`
+	Deep_sleep  string `json:"deep_sleep"`
+	Description string `json:"description"`
+}
+
 func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	var sleeps []Sleep
 	db, err := dbConnect()
@@ -121,6 +134,10 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 			return fmt.Errorf("scan the count error: %v", err)
 		}
 	}
+	if err := countRows.Err(); err != nil {
+		log.Fatal(err)
+		return fmt.Errorf("scan sleep count error: %v", err)
+	}
 	if count == 0 {
 		year := startDay.Year()
 		month := int(startDay.Month())
@@ -143,10 +160,6 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 		var placeHolders []string
 		var vals []interface{}
 		for insertDayNum := dayNum; insertDayNum <= endDayNum; insertDayNum++ {
-			//log.Println(year)
-			//log.Println(month)
-			log.Println(insertDayNum)
-			//log.Println(endDayNum)
 			placeHolders = append(placeHolders, "(?,?,?,?,?,?,?,?,?,?)")
 			vals = append(
 				vals,
@@ -163,15 +176,13 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 			dayNum++
 		}
 		insertQuery += strings.Join(placeHolders, ", ")
-		log.Println(insertQuery)
-		log.Println(placeHolders)
 		result, err := db.Exec(insertQuery, vals...)
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
 		rows, _ := result.RowsAffected()
-		fmt.Printf("登録に成功した件数: %d\n", rows)
+		fmt.Printf("insert sleep suceed: %d\n", rows)
 	}
 	return err
 }
@@ -209,6 +220,10 @@ func shapeMonth(monthFromURLQuery string) (month string) {
 			log.Fatal("Month Conv Error: ", err)
 			log.Fatal("Error Month Str: ", tmpMonthStr)
 			return
+		}
+		if tmpMonthNum <= 0 || 12 < tmpMonthNum {
+			log.Fatal("Invalid Month Error:", err)
+			log.Fatal("Error Month Num: ", tmpMonthNum)
 		}
 		month = time.Date(tmpYearNum, time.Month(tmpMonthNum), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
 	}
