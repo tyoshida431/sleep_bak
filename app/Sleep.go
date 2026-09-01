@@ -24,9 +24,7 @@ type Sleep struct {
 }
 
 type SleepFromFront struct {
-	ID          int    `json:"id"`
 	Date        string `json:"date"`
-	DateStr     string `json:"date_str"`
 	Wake        int    `json:"wake"`
 	Bath        int    `json:"bath"`
 	Bed         int    `json:"bed"`
