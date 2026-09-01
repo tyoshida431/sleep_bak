@@ -25,9 +25,9 @@ type Sleep struct {
 
 type SleepFromFront struct {
 	Date        string `json:"date"`
-	Wake        int    `json:"wake"`
-	Bath        int    `json:"bath"`
-	Bed         int    `json:"bed"`
+	Wake        string `json:"wake"`
+	Bath        string `json:"bath"`
+	Bed         string `json:"bed"`
 	Sleep_in    string `json:"sleep_in"`
 	Sleep       string `json:"sleep"`
 	Deep_sleep  string `json:"deep_sleep"`
@@ -187,6 +187,11 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 func makeDayForInsert(year int, month int, day int) time.Time {
 	now := time.Now()
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
+}
+func updateSleep(updateSleeps []SleepFromFront) (retSleeps []Sleep, err error) {
+	log.Println(updateSleeps)
+	// TODO : ロジックを書きます。
+	return retSleeps, err
 }
 func changeDateString(dateStringFromDB string) (dateStringToDisp string) {
 	return dateStringFromDB[:10]
