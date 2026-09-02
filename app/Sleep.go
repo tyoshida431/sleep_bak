@@ -188,27 +188,122 @@ func makeDayForInsert(year int, month int, day int) time.Time {
 	now := time.Now()
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
 }
-func updateSleep(updateSleeps []SleepFromFront) (retSleeps []Sleep, err error) {
-	log.Println(updateSleeps)
-	// TODO : ロジックを書きます。
-	//now := time.Now()
-	//updateQuery := `
-	//	INSERT INTO sleeps(
-	//		date,
-	//		wake,
-	//		bath,
-	//		bed,
-	//		sleep_in,
-	//		sleep,
-	//		deep_sleep,
-	//		description,
-	//		created_at,
-	//		updated_at
-	//	) VALUES `
-	//var placeHolders []string
-	//var vals []interface{}
+func updateSleep(updateSleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 
-	return retSleeps, err
+	// Date        string `json:"date"`
+	// Wake        string `json:"wake"`
+	// Bath        string `json:"bath"`
+	// Bed         string `json:"bed"`
+	// Sleep_in    string `json:"sleep_in"`
+	// Sleep       string `json:"sleep"`
+	// Deep_sleep  string `json:"deep_sleep"`
+	// Description string `json:"description"`
+
+	//	ID          int    `json:"id"`
+	// Date        string `json:"date"`
+	// DateStr     string `json:"date_str"`
+	// Wake        int    `json:"wake"`
+	// Bath        int    `json:"bath"`
+	// Bed         int    `json:"bed"`
+	// Sleep_in    string `json:"sleep_in"`
+	// Sleep       string `json:"sleep"`
+	// Deep_sleep  string `json:"deep_sleep"`
+	// Description string `json:"description"`
+
+	var updateSleeps []Sleep
+	for _, sleepFromFront := range updateSleepsFromFront {
+		var sleep Sleep
+		sleep.ID = 0
+		sleep.Date = sleepFromFront.Date
+		sleep.Wake, err = strconv.Atoi(sleepFromFront.Wake)
+		if err != nil {
+			log.Fatal("Wake Conv Error: ", err)
+			log.Fatal("Error Wake Str: ", sleepFromFront.Wake)
+			return nil, err
+		}
+		sleep.Bath, err = strconv.Atoi(sleepFromFront.Bath)
+		if err != nil {
+			log.Fatal("Bath Conv Error: ", err)
+			log.Fatal("Error Bath Str: ", sleepFromFront.Bath)
+			return nil, err
+		}
+		sleep.Bed, err = strconv.Atoi(sleepFromFront.Bed)
+		if err != nil {
+			log.Fatal("Bed Conv Error: ", err)
+			log.Fatal("Error Bed Str: ", sleepFromFront.Bed)
+			return nil, err
+		}
+		sleep.Sleep_in = sleepFromFront.Sleep_in
+		sleep.Sleep = sleepFromFront.Sleep
+		sleep.Deep_sleep = sleepFromFront.Deep_sleep
+		sleep.Description = sleepFromFront.Description
+		updateSleeps = append(updateSleeps, sleep)
+	}
+
+	db, err := dbConnect()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	defer func() {
+		dbCloseErr := db.Close()
+		if dbCloseErr != nil {
+			log.Fatal("DB Close Error:", err)
+			return
+		}
+		err = dbCloseErr
+	}()
+	updateQuery := `
+		UPDATE sleeps 
+		SET 
+		  wake=?,
+		  bath=?,
+		  bed=?,
+		  sleep_in=?,
+		  sleep=?,
+		  deep_sleep=?,
+		  description=?,
+		  updated_at=? 
+		WHERE 
+		  date=?`
+	stmt, err := db.Prepare(updateQuery)
+	if err != nil {
+		log.Fatal("update error: ", err)
+		return nil, err
+	}
+	defer func() {
+		statementCloseErr := stmt.Close()
+		if statementCloseErr != nil {
+			log.Fatal("Statement Close Error:", err)
+			return
+		}
+		err = statementCloseErr
+	}()
+
+	now := time.Now()
+	for _, updateSleep := range updateSleeps {
+		_, err := stmt.Exec(
+			updateSleep.Wake,
+			updateSleep.Bath,
+			updateSleep.Bed,
+			updateSleep.Sleep_in,
+			updateSleep.Sleep,
+			updateSleep.Deep_sleep,
+			updateSleep.Description,
+			now,
+			updateSleep.Date,
+		)
+		if err != nil {
+			log.Fatal("update error: ", err)
+			return nil, err
+		}
+	}
+	// 2026-09-01
+	// 0123456789
+	var resultMonth = updateSleeps[0].Date[:4]
+	resultMonth += updateSleeps[0].Date[5:7]
+	sleeps, err = getSleep(resultMonth)
+	return sleeps, err
 }
 func changeDateString(dateStringFromDB string) (dateStringToDisp string) {
 	return dateStringFromDB[:10]
