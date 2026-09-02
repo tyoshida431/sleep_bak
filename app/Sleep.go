@@ -298,7 +298,7 @@ func updateSleep(updateSleepsFromFront []SleepFromFront) (sleeps []Sleep, err er
 			return nil, err
 		}
 	}
-	// 2026-09-01
+	// 2026-09-01の形式決め打ちで月引数を作ります。
 	// 0123456789
 	var resultMonth = updateSleeps[0].Date[:4]
 	resultMonth += updateSleeps[0].Date[5:7]
