@@ -300,8 +300,17 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 	}
 	// 2026-09-01の形式決め打ちで月引数を作ります。
 	// 0123456789
-	var resultMonth = updateSleeps[0].Date[:4]
-	resultMonth += updateSleeps[0].Date[5:7]
+	var tmpYear = updateSleeps[0].Date[:4]
+	var tmpMonth = updateSleeps[0].Date[5:7]
+	if len(tmpYear) != 4 {
+		log.Fatal("Invalid YearStr: ", tmpYear)
+		return nil, fmt.Errorf(": Invalid YearStr: %v", tmpYear)
+	}
+	if len(tmpMonth) != 2 {
+		log.Fatal("Invalid MonthStr: ", tmpMonth)
+		return nil, fmt.Errorf(": Invalid MonthStr: %v", tmpMonth)
+	}
+	var resultMonth = tmpYear + tmpMonth
 	sleeps, err = getSleep(resultMonth)
 	return sleeps, err
 }
