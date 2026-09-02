@@ -38,7 +38,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	var sleeps []Sleep
 	db, err := dbConnect()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("db Connect Error: ", err)
 		return nil, err
 	}
 	defer func() {
@@ -188,7 +188,7 @@ func makeDayForInsert(year int, month int, day int) time.Time {
 	now := time.Now()
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
 }
-func updateSleep(updateSleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
+func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 
 	// Date        string `json:"date"`
 	// Wake        string `json:"wake"`
@@ -211,38 +211,38 @@ func updateSleep(updateSleepsFromFront []SleepFromFront) (sleeps []Sleep, err er
 	// Description string `json:"description"`
 
 	var updateSleeps []Sleep
-	for _, sleepFromFront := range updateSleepsFromFront {
-		var sleep Sleep
-		sleep.ID = 0
-		sleep.Date = sleepFromFront.Date
-		sleep.Wake, err = strconv.Atoi(sleepFromFront.Wake)
+	for _, sleepFromFront := range sleepsFromFront {
+		var updateSleep Sleep
+		updateSleep.ID = 0
+		updateSleep.Date = sleepFromFront.Date
+		updateSleep.Wake, err = strconv.Atoi(sleepFromFront.Wake)
 		if err != nil {
 			log.Fatal("Wake Conv Error: ", err)
 			log.Fatal("Error Wake Str: ", sleepFromFront.Wake)
 			return nil, err
 		}
-		sleep.Bath, err = strconv.Atoi(sleepFromFront.Bath)
+		updateSleep.Bath, err = strconv.Atoi(sleepFromFront.Bath)
 		if err != nil {
 			log.Fatal("Bath Conv Error: ", err)
 			log.Fatal("Error Bath Str: ", sleepFromFront.Bath)
 			return nil, err
 		}
-		sleep.Bed, err = strconv.Atoi(sleepFromFront.Bed)
+		updateSleep.Bed, err = strconv.Atoi(sleepFromFront.Bed)
 		if err != nil {
 			log.Fatal("Bed Conv Error: ", err)
 			log.Fatal("Error Bed Str: ", sleepFromFront.Bed)
 			return nil, err
 		}
-		sleep.Sleep_in = sleepFromFront.Sleep_in
-		sleep.Sleep = sleepFromFront.Sleep
-		sleep.Deep_sleep = sleepFromFront.Deep_sleep
-		sleep.Description = sleepFromFront.Description
-		updateSleeps = append(updateSleeps, sleep)
+		updateSleep.Sleep_in = sleepFromFront.Sleep_in
+		updateSleep.Sleep = sleepFromFront.Sleep
+		updateSleep.Deep_sleep = sleepFromFront.Deep_sleep
+		updateSleep.Description = sleepFromFront.Description
+		updateSleeps = append(updateSleeps, updateSleep)
 	}
 
 	db, err := dbConnect()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("db Connect Error: ", err)
 		return nil, err
 	}
 	defer func() {
