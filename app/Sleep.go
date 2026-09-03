@@ -51,6 +51,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	}()
 
 	// yyyymmの形で入って来るのを決め打ちします。
+	// TODO : shapeMonthで形式チェックして不正なら戻ること。
 	month := shapeMonth(monthFromURLQuery)
 	startDay := getStartDay(month)
 	endDay := getEndDay(month)
