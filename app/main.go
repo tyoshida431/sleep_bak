@@ -12,12 +12,9 @@ func main() {
 	cors, err := getCorsConfig()
 	if err == nil {
 		router.Use(cors)
+	} else {
+		log.Fatal("Get Cors Config Error: ", err)
 	}
-	//router.GET("/", func(c *gin.Context) {
-	//	c.JSON(200, gin.H{
-	//		"message": "Hello World",
-	//	})
-	//})
 	router.GET("/sleep", func(c *gin.Context) {
 		month := c.Query("month")
 		sleeps, err := getSleep(month)
@@ -42,6 +39,6 @@ func main() {
 	})
 	err = router.Run(":7070")
 	if err != nil {
-		log.Fatal("Cannot Run Server Error:", err)
+		log.Fatal("Cannot Run Server Error: ", err)
 	}
 }
