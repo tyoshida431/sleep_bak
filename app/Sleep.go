@@ -101,7 +101,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 			&sleep.Sleep,
 			&sleep.Deep_sleep,
 			&sleep.Description); err != nil {
-			log.Println(err)
+			log.Fatal("Sleep Row Scan Error: ", err)
 			return nil, fmt.Errorf("scan the sleep error: %v", err)
 		}
 		sleep.DateStr = changeDateString(sleep.Date)
