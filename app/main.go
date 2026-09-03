@@ -37,8 +37,7 @@ func main() {
 			}
 		}
 	})
-	err = router.Run(":7070")
-	if err != nil {
+	if err = router.Run(":7070"); err != nil {
 		log.Fatal("Cannot Run Server Error: ", err)
 	}
 }
