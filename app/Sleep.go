@@ -52,7 +52,11 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 
 	// yyyymmの形で入って来るのを決め打ちします。
 	// TODO : shapeMonthで形式チェックして不正なら戻ること。
-	month := shapeMonth(monthFromURLQuery)
+	month, err := shapeMonth(monthFromURLQuery)
+	if err != nil {
+		log.Fatal("shapeMonth error. Invalid Month: ", err)
+		return nil, err
+	}
 	startDay := getStartDay(month)
 	endDay := getEndDay(month)
 	err = makeNewMonth(db, startDay, endDay)
@@ -139,7 +143,7 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 	}
 	if count == 0 {
 		year := startDay.Year()
-		month := int(startDay.Month())
+		monthNum := int(startDay.Month())
 		dayNum := startDay.Day()
 		endDayNum := endDay.Day()
 		now := time.Now()
@@ -162,7 +166,7 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 			placeHolders = append(placeHolders, "(?,?,?,?,?,?,?,?,?,?)")
 			vals = append(
 				vals,
-				makeDayForInsert(year, month, insertDayNum),
+				makeDayForInsert(year, monthNum, insertDayNum),
 				0,
 				0,
 				0,
@@ -318,7 +322,7 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 func changeDateString(dateStringFromDB string) (dateStringToDisp string) {
 	return dateStringFromDB[:10]
 }
-func shapeMonth(monthFromURLQuery string) (month string) {
+func shapeMonth(monthFromURLQuery string) (month string, err error) {
 	now := time.Now()
 	if monthFromURLQuery == "" {
 		month = now.Format("2006-01-02")
@@ -328,32 +332,31 @@ func shapeMonth(monthFromURLQuery string) (month string) {
 		tmpMonthStr := monthFromURLQuery[4:]
 		if len(tmpYearStr) != 4 {
 			log.Fatal("Invalid Year: ", tmpYearStr)
-			return
+			return "", fmt.Errorf("Invalid Year: %v", tmpYearStr)
 		}
 		if len(tmpMonthStr) != 2 {
 			log.Fatal("Invalid Month: ", tmpMonthStr)
-			return
+			return "", fmt.Errorf("Invalid Month: %v", tmpMonthStr)
 		}
 		tmpYearNum, err := strconv.Atoi(tmpYearStr)
 		if err != nil {
 			log.Fatal("Year Conv Error: ", err)
 			log.Fatal("Error Year Str: ", tmpYearStr)
-			return
+			return "", fmt.Errorf("Invalid Year: %v", err)
 		}
 		tmpMonthNum, err := strconv.Atoi(tmpMonthStr)
 		if err != nil {
 			log.Fatal("Month Conv Error: ", err)
 			log.Fatal("Error Month Str: ", tmpMonthStr)
-			return
+			return "", fmt.Errorf("Invalid Month: %v", err)
 		}
 		if tmpMonthNum <= 0 || 12 < tmpMonthNum {
-			log.Fatal("Invalid Month Error:", err)
-			log.Fatal("Error Month Num: ", tmpMonthNum)
+			log.Fatal("Invalid Month Error: ", tmpMonthNum)
+			return "", fmt.Errorf("Invalid Month: %d", tmpMonthNum)
 		}
 		month = time.Date(tmpYearNum, time.Month(tmpMonthNum), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
 	}
-	log.Println(month)
-	return month
+	return month, nil
 }
 func getStartDay(month string) (startDay time.Time) {
 	now := time.Now()

@@ -54,7 +54,7 @@ paths:
                 type: array
                 items:
                   example:
-                    - message: サーバー内部でエラーが発生しました。 
+                    - message: サーバー側で発生したエラー内容。
     post:
       tags:
         - update sleep.
@@ -90,7 +90,7 @@ paths:
                   example: 03:03:00
                 description:
                   type: string
-                  example: その日のメモ書きです。
+                  example: その日のメモ書き。
       responses:
         "200":
           description: 更新成功時。
@@ -102,7 +102,7 @@ paths:
                 type: array
                 items:
                   example:
-                    - message: サーバー内部でエラーが発生しました。 
+                    - message: サーバー側で発生したエラー内容。
 tags:
     - name: sleep
       description: 睡眠一覧。
