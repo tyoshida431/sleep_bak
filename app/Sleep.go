@@ -61,7 +61,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 		log.Println("Can't get StartDay: ", err)
 		return nil, err
 	}
-	endDay := getEndDay(month)
+	endDay, err := getEndDay(month)
 	if err != nil {
 		log.Println("Can't get EndDay: ", err)
 		return nil, err
