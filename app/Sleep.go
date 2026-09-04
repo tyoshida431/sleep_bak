@@ -38,13 +38,13 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	var sleeps []Sleep
 	db, err := dbConnect()
 	if err != nil {
-		log.Fatal("db Connect Error: ", err)
+		log.Println("db Connect Error: ", err)
 		return nil, err
 	}
 	defer func() {
 		dbCloseErr := db.Close()
 		if dbCloseErr != nil {
-			log.Fatal("DB Close Error:", err)
+			log.Println("DB Close Error:", err)
 			return
 		}
 		err = dbCloseErr
@@ -54,14 +54,14 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	// TODO : shapeMonthで形式チェックして不正なら戻ること。
 	month, err := shapeMonth(monthFromURLQuery)
 	if err != nil {
-		log.Fatal("shapeMonth error. Invalid Month: ", err)
+		log.Println("shapeMonth error. Invalid Month: ", err)
 		return nil, err
 	}
 	startDay := getStartDay(month)
 	endDay := getEndDay(month)
 	err = makeNewMonth(db, startDay, endDay)
 	if err != nil {
-		log.Fatal("Make New Month Error:", err)
+		log.Println("Make New Month Error:", err)
 		return nil, err
 	}
 	query := `
@@ -81,7 +81,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	    date>=? AND date<=?`
 	sleepRows, err := db.Query(query, startDay, endDay)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("select sleeps query error: ", err)
 		return nil, fmt.Errorf("query error: %v", err)
 	}
 	// //ID          int    `json:"id"`
@@ -105,14 +105,14 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 			&sleep.Sleep,
 			&sleep.Deep_sleep,
 			&sleep.Description); err != nil {
-			log.Fatal("Sleep Row Scan Error: ", err)
+			log.Println("Sleep Row Scan Error: ", err)
 			return nil, fmt.Errorf("scan the sleep error: %v", err)
 		}
 		sleep.DateStr = changeDateString(sleep.Date)
 		sleeps = append(sleeps, sleep)
 	}
 	if err := sleepRows.Err(); err != nil {
-		log.Fatal(err)
+		log.Println("sleep Row Error: ", err)
 		return nil, fmt.Errorf("scan sleep error: %v", err)
 	}
 	return sleeps, err
@@ -127,19 +127,19 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 	    	date>=? AND date<=?`
 	countRows, err := db.Query(countQuery, startDay, endDay)
 	if err != nil {
-		log.Fatal(err)
-		return fmt.Errorf("query error: %v", err)
+		log.Println("sleeps month exist count query error: ", err)
+		return fmt.Errorf("sleeps month exist count query error: %v", err)
 	}
 	var count int
 	for countRows.Next() {
 		if err := countRows.Scan(&count); err != nil {
-			log.Fatal(err)
-			return fmt.Errorf("scan the count error: %v", err)
+			log.Println("sleeps month exist count scan error: ", err)
+			return fmt.Errorf("sleeps month exist count scan error: %v", err)
 		}
 	}
 	if err := countRows.Err(); err != nil {
-		log.Fatal(err)
-		return fmt.Errorf("scan sleep count error: %v", err)
+		log.Println("sleeps month exist count rows error: ", err)
+		return fmt.Errorf("sleeps month exist count rows error: %v", err)
 	}
 	if count == 0 {
 		year := startDay.Year()
@@ -181,7 +181,7 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 		insertQuery += strings.Join(placeHolders, ", ")
 		result, err := db.Exec(insertQuery, vals...)
 		if err != nil {
-			log.Fatal("Insert sleeps Error: ", err)
+			log.Println("Insert month sleeps Error: ", err)
 			return err
 		}
 		rows, _ := result.RowsAffected()
@@ -223,19 +223,19 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 		updateSleep.Wake, err = strconv.Atoi(sleepFromFront.Wake)
 		if err != nil {
 			log.Println("Wake Conv Error: ", err)
-			log.Fatal("Error Wake Str: ", sleepFromFront.Wake)
+			log.Println("Error Wake Str: ", sleepFromFront.Wake)
 			return nil, err
 		}
 		updateSleep.Bath, err = strconv.Atoi(sleepFromFront.Bath)
 		if err != nil {
 			log.Println("Bath Conv Error: ", err)
-			log.Fatal("Error Bath Str: ", sleepFromFront.Bath)
+			log.Println("Error Bath Str: ", sleepFromFront.Bath)
 			return nil, err
 		}
 		updateSleep.Bed, err = strconv.Atoi(sleepFromFront.Bed)
 		if err != nil {
 			log.Println("Bed Conv Error: ", err)
-			log.Fatal("Error Bed Str: ", sleepFromFront.Bed)
+			log.Println("Error Bed Str: ", sleepFromFront.Bed)
 			return nil, err
 		}
 		updateSleep.Sleep_in = sleepFromFront.Sleep_in
@@ -247,13 +247,13 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 
 	db, err := dbConnect()
 	if err != nil {
-		log.Fatal("db Connect Error: ", err)
+		log.Println("db Connect Error: ", err)
 		return nil, err
 	}
 	defer func() {
 		dbCloseErr := db.Close()
 		if dbCloseErr != nil {
-			log.Fatal("DB Close Error:", err)
+			log.Println("DB Close Error:", err)
 			return
 		}
 		err = dbCloseErr
@@ -273,13 +273,13 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 		  date=?`
 	stmt, err := db.Prepare(updateQuery)
 	if err != nil {
-		log.Fatal("update error: ", err)
+		log.Println("sleeps update error: ", err)
 		return nil, err
 	}
 	defer func() {
 		statementCloseErr := stmt.Close()
 		if statementCloseErr != nil {
-			log.Fatal("Statement Close Error:", err)
+			log.Println("sleeps update Statement Close Error:", err)
 			return
 		}
 		err = statementCloseErr
@@ -299,7 +299,7 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 			updateSleep.Date,
 		)
 		if err != nil {
-			log.Fatal("update error: ", err)
+			log.Println("sleeps update error: ", err)
 			return nil, err
 		}
 	}
@@ -308,11 +308,11 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 	var tmpYear = updateSleeps[0].Date[:4]
 	var tmpMonth = updateSleeps[0].Date[5:7]
 	if len(tmpYear) != 4 {
-		log.Fatal("Invalid YearStr: ", tmpYear)
+		log.Println("Invalid YearStr: ", tmpYear)
 		return nil, fmt.Errorf("Invalid YearStr: %v", tmpYear)
 	}
 	if len(tmpMonth) != 2 {
-		log.Fatal("Invalid MonthStr: ", tmpMonth)
+		log.Println("Invalid MonthStr: ", tmpMonth)
 		return nil, fmt.Errorf("Invalid MonthStr: %v", tmpMonth)
 	}
 	var resultMonth = tmpYear + tmpMonth
@@ -331,27 +331,27 @@ func shapeMonth(monthFromURLQuery string) (month string, err error) {
 		tmpYearStr := monthFromURLQuery[:4]
 		tmpMonthStr := monthFromURLQuery[4:]
 		if len(tmpYearStr) != 4 {
-			log.Fatal("Invalid Year: ", tmpYearStr)
+			log.Println("Invalid Year: ", tmpYearStr)
 			return "", fmt.Errorf("Invalid Year: %v", tmpYearStr)
 		}
 		if len(tmpMonthStr) != 2 {
-			log.Fatal("Invalid Month: ", tmpMonthStr)
+			log.Println("Invalid Month: ", tmpMonthStr)
 			return "", fmt.Errorf("Invalid Month: %v", tmpMonthStr)
 		}
 		tmpYearNum, err := strconv.Atoi(tmpYearStr)
 		if err != nil {
 			log.Println("Year Conv Error: ", err)
-			log.Fatal("Error Year Str: ", tmpYearStr)
+			log.Println("Error Year Str: ", tmpYearStr)
 			return "", fmt.Errorf("Invalid Year: %v", err)
 		}
 		tmpMonthNum, err := strconv.Atoi(tmpMonthStr)
 		if err != nil {
 			log.Println("Month Conv Error: ", err)
-			log.Fatal("Error Month Str: ", tmpMonthStr)
+			log.Println("Error Month Str: ", tmpMonthStr)
 			return "", fmt.Errorf("Invalid Month: %v", err)
 		}
 		if tmpMonthNum <= 0 || 12 < tmpMonthNum {
-			log.Fatal("Invalid Month Error: ", tmpMonthNum)
+			log.Println("Invalid Month Error: ", tmpMonthNum)
 			return "", fmt.Errorf("Invalid Month: %d", tmpMonthNum)
 		}
 		month = time.Date(tmpYearNum, time.Month(tmpMonthNum), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
@@ -364,7 +364,7 @@ func getStartDay(month string) (startDay time.Time) {
 	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
 	if err != nil {
 		log.Println("first Day Parse Error:", err)
-		log.Fatal("Fatal Date:", tmpMonth)
+		log.Println("Fatal Date:", tmpMonth)
 		return
 	}
 	firstDay := time.Date(monthDay.Year(), monthDay.Month(), 1, 0, 0, 0, 0, now.Location())
@@ -376,7 +376,7 @@ func getEndDay(month string) (startDay time.Time) {
 	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
 	if err != nil {
 		log.Println("last Day Parse Error:", err)
-		log.Fatal("Fatal Date:", tmpMonth)
+		log.Println("Fatal Date:", tmpMonth)
 		return
 	}
 	lastDay := time.Date(monthDay.Year(), monthDay.Month(), 1, 23, 59, 59, 0, now.Location()).AddDate(0, 1, -1)
