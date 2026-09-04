@@ -222,19 +222,19 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 		updateSleep.Date = sleepFromFront.Date
 		updateSleep.Wake, err = strconv.Atoi(sleepFromFront.Wake)
 		if err != nil {
-			log.Fatal("Wake Conv Error: ", err)
+			log.Println("Wake Conv Error: ", err)
 			log.Fatal("Error Wake Str: ", sleepFromFront.Wake)
 			return nil, err
 		}
 		updateSleep.Bath, err = strconv.Atoi(sleepFromFront.Bath)
 		if err != nil {
-			log.Fatal("Bath Conv Error: ", err)
+			log.Println("Bath Conv Error: ", err)
 			log.Fatal("Error Bath Str: ", sleepFromFront.Bath)
 			return nil, err
 		}
 		updateSleep.Bed, err = strconv.Atoi(sleepFromFront.Bed)
 		if err != nil {
-			log.Fatal("Bed Conv Error: ", err)
+			log.Println("Bed Conv Error: ", err)
 			log.Fatal("Error Bed Str: ", sleepFromFront.Bed)
 			return nil, err
 		}
@@ -340,13 +340,13 @@ func shapeMonth(monthFromURLQuery string) (month string, err error) {
 		}
 		tmpYearNum, err := strconv.Atoi(tmpYearStr)
 		if err != nil {
-			log.Fatal("Year Conv Error: ", err)
+			log.Println("Year Conv Error: ", err)
 			log.Fatal("Error Year Str: ", tmpYearStr)
 			return "", fmt.Errorf("Invalid Year: %v", err)
 		}
 		tmpMonthNum, err := strconv.Atoi(tmpMonthStr)
 		if err != nil {
-			log.Fatal("Month Conv Error: ", err)
+			log.Println("Month Conv Error: ", err)
 			log.Fatal("Error Month Str: ", tmpMonthStr)
 			return "", fmt.Errorf("Invalid Month: %v", err)
 		}
@@ -363,7 +363,7 @@ func getStartDay(month string) (startDay time.Time) {
 	tmpMonth := month + " 00:00:00"
 	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
 	if err != nil {
-		log.Fatal("first Day Parse Error:", err)
+		log.Println("first Day Parse Error:", err)
 		log.Fatal("Fatal Date:", tmpMonth)
 		return
 	}
@@ -375,7 +375,7 @@ func getEndDay(month string) (startDay time.Time) {
 	tmpMonth := month + " 23:59:59"
 	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
 	if err != nil {
-		log.Fatal("last Day Parse Error:", err)
+		log.Println("last Day Parse Error:", err)
 		log.Fatal("Fatal Date:", tmpMonth)
 		return
 	}
