@@ -309,11 +309,11 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 	var tmpMonth = updateSleeps[0].Date[5:7]
 	if len(tmpYear) != 4 {
 		log.Fatal("Invalid YearStr: ", tmpYear)
-		return nil, fmt.Errorf(": Invalid YearStr: %v", tmpYear)
+		return nil, fmt.Errorf("Invalid YearStr: %v", tmpYear)
 	}
 	if len(tmpMonth) != 2 {
 		log.Fatal("Invalid MonthStr: ", tmpMonth)
-		return nil, fmt.Errorf(": Invalid MonthStr: %v", tmpMonth)
+		return nil, fmt.Errorf("Invalid MonthStr: %v", tmpMonth)
 	}
 	var resultMonth = tmpYear + tmpMonth
 	sleeps, err = getSleep(resultMonth)
