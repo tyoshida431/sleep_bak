@@ -181,7 +181,7 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 		insertQuery += strings.Join(placeHolders, ", ")
 		result, err := db.Exec(insertQuery, vals...)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Insert sleeps Error: ", err)
 			return err
 		}
 		rows, _ := result.RowsAffected()
