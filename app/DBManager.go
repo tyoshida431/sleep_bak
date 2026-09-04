@@ -21,12 +21,12 @@ func dbConnect() (*sqlx.DB, error) {
 	// .envファイルを読み込む
 	err = godotenv.Load()
 	if err != nil {
-		log.Fatal("Error open .env file:", err)
+		log.Println("Error open .env file:", err)
 		return nil, err
 	}
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
-		log.Fatal("タイムゾーンの読み込みに失敗しました: ", err)
+		log.Println("タイムゾーンの読み込みに失敗しました: ", err)
 		return nil, err
 	}
 
@@ -51,14 +51,14 @@ func dbConnect() (*sqlx.DB, error) {
 	// データベースを開く
 	db, err := sqlx.Open("mysql", config.FormatDSN())
 	if err != nil {
-		log.Fatalf("DB open Error:%v", err)
+		log.Println("DB open Error: ", err)
 		return nil, err
 	}
 
 	// 接続が有効であるか確認する
 	err = db.Ping()
 	if err != nil {
-		log.Fatalf("DB ping Error:%v", err)
+		log.Println("DB ping Error: ", err)
 		return nil, err
 	}
 	return db, nil

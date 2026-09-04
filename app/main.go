@@ -21,7 +21,8 @@ func main() {
 		if err == nil {
 			c.JSON(200, sleeps)
 		} else {
-			c.JSON(500, gin.H{"message": err})
+			log.Println(err)
+			c.JSON(500, gin.H{"message": err.Error()})
 		}
 	})
 	router.POST("/sleep", func(c *gin.Context) {
@@ -33,7 +34,7 @@ func main() {
 			if err == nil {
 				c.JSON(200, sleeps)
 			} else {
-				c.JSON(500, gin.H{"message": err})
+				c.JSON(500, gin.H{"message": err.Error()})
 			}
 		}
 	})
