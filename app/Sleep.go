@@ -89,7 +89,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	sleepRows, err := db.Query(query, startDay, endDay)
 	if err != nil {
 		log.Println("select sleeps query error: ", err)
-		return nil, fmt.Errorf("query error: %v", err)
+		return nil, fmt.Errorf("select sleeps query error: %v", err)
 	}
 	// //ID          int    `json:"id"`
 	// //Date        string `json:"date"`
