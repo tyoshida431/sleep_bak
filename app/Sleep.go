@@ -185,7 +185,7 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 			return err
 		}
 		rows, _ := result.RowsAffected()
-		fmt.Printf("insert sleep suceed: %d\n", rows)
+		log.Println("insert sleep suceed: ", rows)
 	}
 	return err
 }
