@@ -21,7 +21,6 @@ func main() {
 		if err == nil {
 			c.JSON(200, sleeps)
 		} else {
-			log.Println(err)
 			c.JSON(500, gin.H{"message": err.Error()})
 		}
 	})
