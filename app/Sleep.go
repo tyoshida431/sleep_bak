@@ -51,14 +51,21 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	}()
 
 	// yyyymmの形で入って来るのを決め打ちします。
-	// TODO : shapeMonthで形式チェックして不正なら戻ること。
 	month, err := shapeMonth(monthFromURLQuery)
 	if err != nil {
 		log.Println("shapeMonth error. Invalid Month: ", err)
 		return nil, err
 	}
-	startDay := getStartDay(month)
+	startDay, err := getStartDay(month)
+	if err != nil {
+		log.Println("Can't get StartDay: ", err)
+		return nil, err
+	}
 	endDay := getEndDay(month)
+	if err != nil {
+		log.Println("Can't get EndDay: ", err)
+		return nil, err
+	}
 	err = makeNewMonth(db, startDay, endDay)
 	if err != nil {
 		log.Println("Make New Month Error:", err)
@@ -247,7 +254,7 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 
 	db, err := dbConnect()
 	if err != nil {
-		log.Println("db Connect Error: ", err)
+		log.Println("DB Connect Error: ", err)
 		return nil, err
 	}
 	defer func() {
@@ -358,27 +365,27 @@ func shapeMonth(monthFromURLQuery string) (month string, err error) {
 	}
 	return month, nil
 }
-func getStartDay(month string) (startDay time.Time) {
+func getStartDay(month string) (startDay time.Time, err error) {
 	now := time.Now()
 	tmpMonth := month + " 00:00:00"
 	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
 	if err != nil {
 		log.Println("first Day Parse Error:", err)
 		log.Println("Fatal Date:", tmpMonth)
-		return
+		return time.Time{}, err
 	}
 	firstDay := time.Date(monthDay.Year(), monthDay.Month(), 1, 0, 0, 0, 0, now.Location())
-	return firstDay
+	return firstDay, nil
 }
-func getEndDay(month string) (startDay time.Time) {
+func getEndDay(month string) (startDay time.Time, err error) {
 	now := time.Now()
 	tmpMonth := month + " 23:59:59"
 	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
 	if err != nil {
 		log.Println("last Day Parse Error:", err)
 		log.Println("Fatal Date:", tmpMonth)
-		return
+		return time.Time{}, err
 	}
 	lastDay := time.Date(monthDay.Year(), monthDay.Month(), 1, 23, 59, 59, 0, now.Location()).AddDate(0, 1, -1)
-	return lastDay
+	return lastDay, nil
 }
