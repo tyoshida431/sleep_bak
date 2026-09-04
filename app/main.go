@@ -28,7 +28,7 @@ func main() {
 	router.POST("/sleep", func(c *gin.Context) {
 		var sleeps []SleepFromFront
 		if err := c.ShouldBindJSON(&sleeps); err != nil {
-			c.JSON(500, gin.H{"message": err})
+			c.JSON(500, gin.H{"message": err.Error()})
 		} else {
 			sleeps, err := updateSleep(sleeps)
 			if err == nil {
