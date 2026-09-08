@@ -22,26 +22,26 @@ func loadAllowOrigins() ([]string, error) {
 	var retUrls []string
 	file, err := os.Open("config.json")
 	if err != nil {
-		log.Fatal("loadConfig os.Open Error:", err)
+		log.Println("loadConfig os.Open Error:", err)
 		return nil, err
 	}
 	defer func() {
 		fileCloseErr := file.Close()
 		if fileCloseErr != nil {
-			log.Fatal("File Close Error:", err)
+			log.Println("File Close Error:", err)
 			return
 		}
 		err = fileCloseErr
 	}()
 	jsonData, err := io.ReadAll(file)
 	if err != nil {
-		log.Fatal("ioutil.ReadAll Error:", err)
+		log.Println("ioutil.ReadAll Error:", err)
 		return nil, err
 	}
 	var conf Config
 	err = json.Unmarshal(jsonData, &conf)
 	if err != nil {
-		log.Fatal("json Unmarshal Error:", err)
+		log.Println("json Unmarshal Error:", err)
 		return nil, err
 	}
 	for _, url := range conf.APICorsAllowOrigins {
@@ -54,7 +54,7 @@ func getCorsConfig() (gin.HandlerFunc, error) {
 	var allowOrigins []string
 	allowOrigins, err := loadAllowOrigins()
 	if err != nil {
-		log.Fatal("load CorsOrigins Error:", err)
+		log.Println("load CorsOrigins Error:", err)
 		return nil, err
 	}
 	config := cors.DefaultConfig()
