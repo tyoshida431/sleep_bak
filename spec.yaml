@@ -103,6 +103,108 @@ paths:
                 items:
                   example:
                     - message: サーバー側で発生したエラー内容。
+  /wake_time:
+    post:
+      tags:
+        - register wake time.
+      summary:
+        起床時間を更新します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  example: 2026-09-01
+                wake_min:
+                  type: string
+                  example: 140
+                wake_time:
+                  type: string
+                  example: 2026-09-01T07:23:00
+      responses:
+        "200":
+          description: 登録成功時。
+        "500":
+          description: エラー時。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  example:
+                    - message: サーバー側で発生したエラー内容。
+  /bath_time:
+    post:
+      tags:
+        - register bath time.
+      summary:
+        入浴時間を更新します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  example: 2026-09-01
+                bath_min:
+                  type: string
+                  example: 29
+                bath_time:
+                  type: string
+                  example: 2026-09-01T20:23:00
+      responses:
+        "200":
+          description: 登録成功時。
+        "500":
+          description: エラー時。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  example:
+                    - message: サーバー側で発生したエラー内容。
+  /sleep_time:
+    post:
+      tags:
+        - register sleep time.
+      summary:
+        就寝時間を更新します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  example: 2026-09-01
+                bath_min:
+                  type: string
+                  example: 29
+                bath_time:
+                  type: string
+                  example: 2026-09-01T20:54:00
+      responses:
+        "200":
+          description: 登録成功時。
+        "500":
+          description: エラー時。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  example:
+                    - message: サーバー側で発生したエラー内容。
 tags:
     - name: sleep
       description: 睡眠一覧。
