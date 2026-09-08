@@ -205,6 +205,74 @@ paths:
                 items:
                   example:
                     - message: サーバー側で発生したエラー内容。
+  /report_time:
+    post:
+      tags:
+        - register report time.
+      summary:
+        日報時間を更新します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  example: 2026-09-01
+                bath_min:
+                  type: string
+                  example: 8
+                bath_time:
+                  type: string
+                  example: 2026-09-01T16:54:00
+      responses:
+        "200":
+          description: 登録成功時。
+        "500":
+          description: エラー時。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  example:
+                    - message: サーバー側で発生したエラー内容。
+  /picture_time:
+    post:
+      tags:
+        - register picture report time.
+      summary:
+        絵書き日報時間を更新します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  example: 2026-09-01
+                bath_min:
+                  type: string
+                  example: 8
+                bath_time:
+                  type: string
+                  example: 2026-09-01T18:54:00
+      responses:
+        "200":
+          description: 登録成功時。
+        "500":
+          description: エラー時。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  example:
+                    - message: サーバー側で発生したエラー内容。
 tags:
     - name: sleep
       description: 睡眠一覧。
