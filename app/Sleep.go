@@ -163,6 +163,13 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 				sleep_in,
 				sleep,
 				deep_sleep,
+				wake_time,
+				bath_time,
+				sleep_time,
+				report_time,
+				report_min,
+				picture_time,
+				picture_min,
 				description,
 				created_at,
 				updated_at
@@ -170,7 +177,7 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 		var placeHolders []string
 		var vals []interface{}
 		for insertDayNum := dayNum; insertDayNum <= endDayNum; insertDayNum++ {
-			placeHolders = append(placeHolders, "(?,?,?,?,?,?,?,?,?,?)")
+			placeHolders = append(placeHolders, "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 			vals = append(
 				vals,
 				makeDayForInsert(year, monthNum, insertDayNum),
@@ -181,6 +188,13 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 				"",
 				"",
 				"",
+				time.Time{},
+				time.Time{},
+				time.Time{},
+				time.Time{},
+				0,
+				time.Time{},
+				0,
 				now,
 				now)
 			dayNum++
