@@ -177,7 +177,7 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 		var placeHolders []string
 		var vals []interface{}
 		for insertDayNum := dayNum; insertDayNum <= endDayNum; insertDayNum++ {
-			placeHolders = append(placeHolders, "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+			placeHolders = append(placeHolders, "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 			vals = append(
 				vals,
 				makeDayForInsert(year, monthNum, insertDayNum),
