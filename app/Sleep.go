@@ -336,6 +336,10 @@ func shapeMonth(monthFromURLQuery string) (month string, err error) {
 		month = now.Format("2006-01-02")
 	} else {
 		// yyyymmの形決め打ちで作成する。
+		if len(monthFromURLQuery) != 6 {
+			log.Println("Invalid month style: ", monthFromURLQuery)
+			return "", fmt.Errorf("Invalid month style: %v", monthFromURLQuery)
+		}
 		tmpYearStr := monthFromURLQuery[:4]
 		tmpMonthStr := monthFromURLQuery[4:]
 		if len(tmpYearStr) != 4 {
