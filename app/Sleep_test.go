@@ -6,11 +6,48 @@ import (
 	"time"
 )
 
-// func getEndDay(month string) (startDay time.Time, err error) {
-func TestGetEndDay(t *testing.T) {
-	// okテスト
-	//got, err := getEndDay("2026-09-14")
+func TestShapeMonth(t *testing.T) {
+	tests := []struct {
+		name       string
+		datestring string
+		want       string
+		wantErr    bool
+	}{
+		{"ok", "202609", "2026-09-01", false},
+		{"bad 年だけ", "2026", "2026-09-01", true},
+		{"bad 年欠け", "02609", "2026-09-01", true},
+		{"bad 月欠け", "20269", "2026-09-01", true},
+		{"bad 形式違い", "2026-09-14", "2026-09-01", true},
+		{"bad 存在しない日付", "20260931", "2026-09-01", true},
+	}
 
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := shapeMonth(test.datestring)
+			if (err != nil) != test.wantErr {
+				log.Println(err)
+			}
+			if test.wantErr {
+				return
+			}
+			if got != test.want {
+				t.Errorf("shapeMonth=%s; want %s", got, test.want)
+			}
+		})
+	}
+
+	now := time.Now().Format("2006-01-02")
+	testNow, err := shapeMonth("")
+	if err != nil {
+		log.Println(err)
+	}
+	if now != testNow {
+		t.Errorf("shapeMonth=%s; want %s", testNow, now)
+	}
+
+}
+
+func TestGetEndDay(t *testing.T) {
 	tmpMonth := "2026-09-30 23:59:59"
 	now := time.Now()
 	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
@@ -29,6 +66,7 @@ func TestGetEndDay(t *testing.T) {
 		{"bad 月まで", "2026-09", true},
 		{"bad 形式違い", "20260914", true},
 		{"bad 存在しない日付", "2026-09-31", true},
+		{"bad 空白", "", true},
 	}
 
 	for _, test := range tests {
