@@ -6,6 +6,36 @@ import (
 	"time"
 )
 
+func TestChangeDateString(t *testing.T) {
+	tests := []struct {
+		name       string
+		datestring string
+		want       string
+		wantErr    bool
+	}{
+		{"ok", "2026-09-01T00:00:00+09:00", "2026-09-01", false},
+		{"bad JSTない", "2026-09-01T00:00:00", "2026-09-01", true},
+		{"bad 年欠け", "09-01T00:00:00+09:00", "2026-09-01", true},
+		{"bad 月欠け", "2026-01T00:00:00+09:00", "2026-09-01", true},
+		{"bad 形式違い", "20260901T00:00:00+09:00", "2026-09-01", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := changeDateString(test.datestring)
+			if (err != nil) != test.wantErr {
+				log.Println(err)
+			}
+			if test.wantErr {
+				return
+			}
+			if got != test.want {
+				t.Errorf("ChangeDateString=%s; want %s", got, test.want)
+			}
+		})
+	}
+}
+
 func TestShapeMonth(t *testing.T) {
 	tests := []struct {
 		name       string

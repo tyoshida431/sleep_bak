@@ -115,7 +115,11 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 			log.Println("Sleep Row Scan Error: ", err)
 			return nil, fmt.Errorf("scan the sleep error: %v", err)
 		}
-		sleep.DateStr = changeDateString(sleep.Date)
+		sleep.DateStr, err = changeDateString(sleep.Date)
+		if err != nil {
+			log.Println("changeDate error: ", err)
+			return nil, err
+		}
 		sleeps = append(sleeps, sleep)
 	}
 	if err := sleepRows.Err(); err != nil {
@@ -327,8 +331,18 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 	sleeps, err = getSleep(resultMonth)
 	return sleeps, err
 }
-func changeDateString(dateStringFromDB string) (dateStringToDisp string) {
-	return dateStringFromDB[:10]
+func changeDateString(dateStringFromDB string) (dateStringToDisp string, err error) {
+	if len(dateStringFromDB) != 25 {
+		log.Println("Invalid date style: ", dateStringFromDB)
+		return "", fmt.Errorf("Invalid date style: %v", dateStringFromDB)
+	}
+	dateStringToDisp = dateStringFromDB[:10]
+	dateSlice := []rune(dateStringToDisp)
+	if dateSlice[4] != '-' || dateSlice[7] != '-' {
+		log.Println("Invalid date style: ", dateStringFromDB)
+		return "", fmt.Errorf("Invalid date style: %v", dateStringFromDB)
+	}
+	return dateStringToDisp, nil
 }
 func shapeMonth(monthFromURLQuery string) (month string, err error) {
 	now := time.Now()
