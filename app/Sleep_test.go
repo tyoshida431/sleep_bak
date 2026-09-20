@@ -6,11 +6,6 @@ import (
 	"time"
 )
 
-//func makeDayForInsert(year int, month int, day int) time.Time {
-//	now := time.Now()
-//	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
-//}
-
 func TestMakeDayForInsert(t *testing.T) {
 	tests := []struct {
 		name    string
