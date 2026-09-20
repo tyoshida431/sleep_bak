@@ -6,6 +6,43 @@ import (
 	"time"
 )
 
+//func makeDayForInsert(year int, month int, day int) time.Time {
+//	now := time.Now()
+//	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
+//}
+
+func TestMakeDayForInsert(t *testing.T) {
+	tests := []struct {
+		name    string
+		year    int
+		month   int
+		day     int
+		wantErr bool
+	}{
+		{"ok", 2026, 9, 30, false},
+		{"bad 存在しない月日", 2026, 9, 31, true},
+		// TODO : テストデーター足す。
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := makeDayForInsert(test.year, test.month, test.day)
+			if (err != nil) != test.wantErr {
+				log.Println(err)
+			}
+			if test.wantErr {
+				return
+			}
+			now := time.Now()
+			want := time.Date(test.year, time.Month(test.month), test.day, 0, 0, 0, 0, now.Location())
+			if want.Before(got) {
+				t.Errorf("makeDayForInsert=%v; want %v", got, want)
+			} else if want.After(got) {
+				t.Errorf("makeDayForInsert=%v; want %v", got, want)
+			}
+		})
+	}
+}
+
 func TestChangeDateString(t *testing.T) {
 	tests := []struct {
 		name       string

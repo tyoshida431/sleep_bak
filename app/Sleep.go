@@ -176,9 +176,14 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 		var vals []interface{}
 		for insertDayNum := dayNum; insertDayNum <= endDayNum; insertDayNum++ {
 			placeHolders = append(placeHolders, "(?,?,?,?,?,?,?,?,?,?)")
+			makedDay, err := makeDayForInsert(year, monthNum, insertDayNum)
+			if err != nil {
+				log.Print("make Day For Insert fail: ", err)
+				return err
+			}
 			vals = append(
 				vals,
-				makeDayForInsert(year, monthNum, insertDayNum),
+				makedDay,
 				0,
 				0,
 				0,
@@ -201,9 +206,29 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 	}
 	return err
 }
-func makeDayForInsert(year int, month int, day int) time.Time {
+func makeDayForInsert(year int, month int, day int) (makedDayTime time.Time, err error) {
+	if year <= 2000 {
+		log.Print("Invalid year: ", year)
+		return time.Time{}, fmt.Errorf("Invalid year num: %v", year)
+	}
+	if month <= 0 && 13 <= month {
+		log.Print("Invalid month: ", month)
+		return time.Time{}, fmt.Errorf("Invalid month num: %d", month)
+	}
+	if day <= 0 && 32 <= day {
+		log.Print("Invalid day: ", day)
+		return time.Time{}, fmt.Errorf("Invalid day num: %d", day)
+	}
 	now := time.Now()
-	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
+	makedDayTime = time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
+	makedYear := makedDayTime.Year()
+	makedMonth := int(makedDayTime.Month())
+	makedDay := makedDayTime.Day()
+	if year != makedYear || month != makedMonth || day != makedDay {
+		log.Print("Invalid Pair of Year, month, Day: ", year, month, day)
+		return time.Time{}, fmt.Errorf("Invalid Pair year, month, day: %d, %d, %d", year, month, day)
+	}
+	return makedDayTime, nil
 }
 func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 
