@@ -34,6 +34,30 @@ type SleepFromFront struct {
 	Description string `json:"description"`
 }
 
+type WakeTime struct {
+	Wake int `json:"wake"`
+}
+
+type WakeTimeFromFront struct {
+	WakeTime string `json:"wakeTime"`
+}
+
+type BathTime struct {
+	Bath int `json:"bath"`
+}
+
+type BathTimeFromFront struct {
+	BathTime string `json:"bathTime"`
+}
+
+type BedTime struct {
+	Bed int `json:"bed"`
+}
+
+type BedTimeFromFront struct {
+	BedTime string `json:"bedTime"`
+}
+
 func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	var sleeps []Sleep
 	db, err := dbConnect()
@@ -45,9 +69,10 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 		dbCloseErr := db.Close()
 		if dbCloseErr != nil {
 			log.Println("DB Close Error:", err)
-			return
+			if err == nil {
+				err = dbCloseErr
+			}
 		}
-		err = dbCloseErr
 	}()
 
 	// yyyymmの形で入って来るのを決め打ちします。
@@ -291,9 +316,10 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 		dbCloseErr := db.Close()
 		if dbCloseErr != nil {
 			log.Println("DB Close Error:", err)
-			return
+			if err == nil {
+				err = dbCloseErr
+			}
 		}
-		err = dbCloseErr
 	}()
 	updateQuery := `
 		UPDATE sleeps 
@@ -317,9 +343,10 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 		statementCloseErr := stmt.Close()
 		if statementCloseErr != nil {
 			log.Println("sleeps update Statement Close Error:", err)
-			return
+			if err == nil {
+				err = statementCloseErr
+			}
 		}
-		err = statementCloseErr
 	}()
 
 	now := time.Now()
@@ -432,4 +459,409 @@ func getEndDay(month string) (startDay time.Time, err error) {
 	}
 	lastDay := time.Date(monthDay.Year(), monthDay.Month(), 1, 23, 59, 59, 0, now.Location()).AddDate(0, 1, -1)
 	return lastDay, nil
+}
+
+func updateWake(updateTime WakeTimeFromFront) (wakeTime WakeTime, err error) {
+	db, err := dbConnect()
+	if err != nil {
+		log.Println("db Connect Error: ", err)
+		return wakeTime, err
+	}
+	defer func() {
+		dbCloseErr := db.Close()
+		if dbCloseErr != nil {
+			log.Println("DB Close Error:", dbCloseErr)
+			if err == nil {
+				err = dbCloseErr
+			}
+		}
+	}()
+	wakeFixedTimeQuery := `
+		SELECT
+			FIXED_HOUR_TIME
+		FROM
+			FIXED_HOUR
+	    WHERE
+	    	FIXED_HOUR_NAME=?`
+	wakeFixedTimeRows, err := db.Query(wakeFixedTimeQuery, "起床")
+	if err != nil {
+		log.Println("wake Fixed Time query error: ", err)
+		return wakeTime, fmt.Errorf("wake Fixed Time query error: %v", err)
+	}
+	var wakeFixedTimeStr string
+	for wakeFixedTimeRows.Next() {
+		if err := wakeFixedTimeRows.Scan(&wakeFixedTimeStr); err != nil {
+			log.Println("wake Fixed Time scan error: ", err)
+			f := fmt.Errorf("wake Fixed Time scan error: %v", err)
+			log.Print(f)
+			if f != nil {
+				log.Print("not null.")
+			}
+			return wakeTime, fmt.Errorf("wake Fixed Time scan error: %v", err)
+		}
+	}
+	if err := wakeFixedTimeRows.Err(); err != nil {
+		log.Println("wake Fixed Time rows error: ", err)
+		return wakeTime, fmt.Errorf("wake Fixed Time rows error: %v", err)
+	}
+
+	wakeTimeStr := updateTime.WakeTime
+	now := time.Now()
+
+	// 起床時間なので0時またぎは対応しない。
+	// 2026-09-22T13:32:00:00 決め打ち。
+	// 01234567890123456
+	if len(wakeTimeStr) != 22 {
+		log.Print("Invalid Wake Fixed Time:", wakeTimeStr)
+		return wakeTime, fmt.Errorf("Invalid Wake Fixed Time: %s", wakeTimeStr)
+	}
+
+	dayStr := wakeTimeStr[:10]
+	log.Print(dayStr)
+	wakeYearNum, err := strconv.Atoi(dayStr[:4])
+	if err != nil {
+		log.Print("Invalid year: ", err)
+		return wakeTime, err
+	}
+	wakeMonthNum, err := strconv.Atoi(dayStr[5:7])
+	if err != nil {
+		log.Print("Invalid month: ", err)
+		return wakeTime, err
+	}
+	wakeDayNum, err := strconv.Atoi(dayStr[8:10])
+	if err != nil {
+		log.Print("Invalid day: ", err)
+		return wakeTime, err
+	}
+	wakeHourNum, err := strconv.Atoi(wakeTimeStr[11:13])
+	if err != nil {
+		log.Print("Invalid Hour: ", err)
+		return wakeTime, err
+	}
+	wakeMinNum, err := strconv.Atoi(wakeTimeStr[14:16])
+	if err != nil {
+		log.Print("Invalid min: ", err)
+		return wakeTime, err
+	}
+
+	wake := time.Date(wakeYearNum, time.Month(wakeMonthNum), wakeDayNum, wakeHourNum, wakeMinNum, 0, 0, now.Location())
+
+	// wakeFixedTimeStr
+	// 10:00:00
+	// 01234567
+	wakeFixedHourNum, err := strconv.Atoi(wakeFixedTimeStr[0:2])
+	if err != nil {
+		log.Print("Invalid fixed hour: ", err)
+		return wakeTime, err
+	}
+	wakeFixedMinNum, err := strconv.Atoi(wakeFixedTimeStr[3:5])
+	if err != nil {
+		log.Print("Invalid fixed min: ", err)
+		return wakeTime, err
+	}
+
+	wakeFixed := time.Date(wakeYearNum, time.Month(wakeMonthNum), wakeDayNum, wakeFixedHourNum, wakeFixedMinNum, 0, 0, now.Location())
+	wakeTimeNum := wakeFixed.Sub(wake).Minutes()
+	log.Println(wakeTimeNum)
+
+	updateQuery := `
+		UPDATE sleeps 
+		SET 
+		  wake=?,
+		  updated_at=?		  
+		WHERE 
+		  date=?`
+	stmt, err := db.Prepare(updateQuery)
+	if err != nil {
+		log.Println("wake update error: ", err)
+		return wakeTime, err
+	}
+	defer func() {
+		statementCloseErr := stmt.Close()
+		if statementCloseErr != nil {
+			log.Println("wake update Statement Close Error:", err)
+			if err == nil {
+				err = statementCloseErr
+			}
+		}
+	}()
+
+	_, err = stmt.Exec(wakeTimeNum, now, dayStr)
+	if err != nil {
+		log.Println("sleeps update error: ", err)
+		return wakeTime, err
+	}
+	wakeTime.Wake = int(wakeTimeNum)
+	return wakeTime, nil
+}
+
+func updateBath(updateTime BathTimeFromFront) (bathTime BathTime, err error) {
+	db, err := dbConnect()
+	if err != nil {
+		log.Println("db Connect Error: ", err)
+		return bathTime, err
+	}
+	defer func() {
+		dbCloseErr := db.Close()
+		if dbCloseErr != nil {
+			log.Println("DB Close Error:", dbCloseErr)
+			if err == nil {
+				err = dbCloseErr
+			}
+		}
+	}()
+	bathFixedTimeQuery := `
+		SELECT
+			FIXED_HOUR_TIME
+		FROM
+			FIXED_HOUR
+	    WHERE
+	    	FIXED_HOUR_NAME=?`
+	bathFixedTimeRows, err := db.Query(bathFixedTimeQuery, "入浴")
+	if err != nil {
+		log.Println("bath Fixed Time query error: ", err)
+		return bathTime, fmt.Errorf("bath Fixed Time query error: %v", err)
+	}
+	var bathFixedTimeStr string
+	for bathFixedTimeRows.Next() {
+		if err := bathFixedTimeRows.Scan(&bathFixedTimeStr); err != nil {
+			log.Println("bath Fixed Time scan error: ", err)
+			return bathTime, fmt.Errorf("bath Fixed Time scan error: %v", err)
+		}
+	}
+	if err := bathFixedTimeRows.Err(); err != nil {
+		log.Println("bath Fixed Time rows error: ", err)
+		return bathTime, fmt.Errorf("bath Fixed Time rows error: %v", err)
+	}
+
+	bathTimeStr := updateTime.BathTime
+	now := time.Now()
+
+	// 0時またぎどうするかです。TODO。
+	if len(bathTimeStr) != 22 {
+		log.Print("Invalid bath Fixed Time:", bathTimeStr)
+		return bathTime, fmt.Errorf("Invalid bath Fixed Time: %s", bathTimeStr)
+	}
+
+	dayStr := bathTimeStr[:10]
+	bathYearNum, err := strconv.Atoi(dayStr[:4])
+	if err != nil {
+		log.Print("Invalid year: ", err)
+		return bathTime, err
+	}
+	bathMonthNum, err := strconv.Atoi(dayStr[5:7])
+	if err != nil {
+		log.Print("Invalid month: ", err)
+		return bathTime, err
+	}
+	bathDayNum, err := strconv.Atoi(dayStr[8:10])
+	if err != nil {
+		log.Print("Invalid day: ", err)
+		return bathTime, err
+	}
+	bathHourNum, err := strconv.Atoi(bathTimeStr[11:13])
+	if err != nil {
+		log.Print("Invalid Hour: ", err)
+		return bathTime, err
+	}
+	bathMinNum, err := strconv.Atoi(bathTimeStr[14:16])
+	if err != nil {
+		log.Print("Invalid min: ", err)
+		return bathTime, err
+	}
+
+	bath := time.Date(bathYearNum, time.Month(bathMonthNum), bathDayNum, bathHourNum, bathMinNum, 0, 0, now.Location())
+
+	// bathFixedTimeStr
+	// 10:00:00
+	// 01234567
+	bathFixedHourNum, err := strconv.Atoi(bathFixedTimeStr[0:2])
+	if err != nil {
+		log.Print("Invalid fixed hour: ", err)
+		return bathTime, err
+	}
+	bathFixedMinNum, err := strconv.Atoi(bathFixedTimeStr[3:5])
+	if err != nil {
+		log.Print("Invalid fixed min: ", err)
+		return bathTime, err
+	}
+
+	bathFixed := time.Date(bathYearNum, time.Month(bathMonthNum), bathDayNum, bathFixedHourNum, bathFixedMinNum, 0, 0, now.Location())
+	// 0時挟みの場合前日が定時の判定をします。
+	if 0 <= bathHourNum && bathHourNum < 12 {
+		bathFixed = bathFixed.AddDate(0, 0, -1)
+		// bathYearNum
+		// bathMonthNum
+		// bathDayNum
+		preDayNum := bathDayNum - 1
+		dayStr = fmt.Sprintf("%04d-%02d-%02d", bathYearNum, bathMonthNum, preDayNum)
+		log.Print(dayStr)
+	}
+	bathTimeNum := bathFixed.Sub(bath).Minutes()
+	log.Println(bathTimeNum)
+
+	updateQuery := `
+		UPDATE sleeps 
+		SET 
+		  bath=?,
+		  updated_at=?		  
+		WHERE 
+		  date=?`
+	stmt, err := db.Prepare(updateQuery)
+	if err != nil {
+		log.Println("bath update error: ", err)
+		return bathTime, err
+	}
+	defer func() {
+		statementCloseErr := stmt.Close()
+		if statementCloseErr != nil {
+			log.Println("bath update Statement Close Error:", err)
+			if err == nil {
+				err = statementCloseErr
+			}
+		}
+	}()
+
+	_, err = stmt.Exec(bathTimeNum, now, dayStr)
+	if err != nil {
+		log.Println("bath update error: ", err)
+		return bathTime, err
+	}
+	bathTime.Bath = int(bathTimeNum)
+	return bathTime, nil
+}
+
+func updateBed(updateTime BedTimeFromFront) (bedTime BedTime, err error) {
+	db, err := dbConnect()
+	if err != nil {
+		log.Println("db Connect Error: ", err)
+		return bedTime, err
+	}
+	defer func() {
+		dbCloseErr := db.Close()
+		if dbCloseErr != nil {
+			log.Println("DB Close Error:", dbCloseErr)
+			if err == nil {
+				err = dbCloseErr
+			}
+		}
+	}()
+	bedFixedTimeQuery := `
+		SELECT
+			FIXED_HOUR_TIME
+		FROM
+			FIXED_HOUR
+	    WHERE
+	    	FIXED_HOUR_NAME=?`
+	bedFixedTimeRows, err := db.Query(bedFixedTimeQuery, "就寝")
+	if err != nil {
+		log.Println("bed Fixed Time query error: ", err)
+		return bedTime, fmt.Errorf("bed Fixed Time query error: %v", err)
+	}
+	var bedFixedTimeStr string
+	for bedFixedTimeRows.Next() {
+		if err := bedFixedTimeRows.Scan(&bedFixedTimeStr); err != nil {
+			log.Println("bed Fixed Time scan error: ", err)
+			return bedTime, fmt.Errorf("bed Fixed Time scan error: %v", err)
+		}
+	}
+	if err := bedFixedTimeRows.Err(); err != nil {
+		log.Println("bed Fixed Time rows error: ", err)
+		return bedTime, fmt.Errorf("bed Fixed Time rows error: %v", err)
+	}
+
+	bedTimeStr := updateTime.BedTime
+	now := time.Now()
+
+	if len(bedTimeStr) != 22 {
+		log.Print("Invalid bed Fixed Time:", bedTimeStr)
+		return bedTime, fmt.Errorf("Invalid bed Fixed Time: %s", bedTimeStr)
+	}
+
+	dayStr := bedTimeStr[:10]
+	bedYearNum, err := strconv.Atoi(dayStr[:4])
+	if err != nil {
+		log.Print("Invalid year: ", err)
+		return bedTime, err
+	}
+	bedMonthNum, err := strconv.Atoi(dayStr[5:7])
+	if err != nil {
+		log.Print("Invalid month: ", err)
+		return bedTime, err
+	}
+	bedDayNum, err := strconv.Atoi(dayStr[8:10])
+	if err != nil {
+		log.Print("Invalid day: ", err)
+		return bedTime, err
+	}
+	bedHourNum, err := strconv.Atoi(bedTimeStr[11:13])
+	if err != nil {
+		log.Print("Invalid Hour: ", err)
+		return bedTime, err
+	}
+	bedMinNum, err := strconv.Atoi(bedTimeStr[14:16])
+	if err != nil {
+		log.Print("Invalid min: ", err)
+		return bedTime, err
+	}
+
+	bed := time.Date(bedYearNum, time.Month(bedMonthNum), bedDayNum, bedHourNum, bedMinNum, 0, 0, now.Location())
+
+	// bedFixedTimeStr
+	// 10:00:00
+	// 01234567
+	bedFixedHourNum, err := strconv.Atoi(bedFixedTimeStr[0:2])
+	if err != nil {
+		log.Print("Invalid fixed hour: ", err)
+		return bedTime, err
+	}
+	bedFixedMinNum, err := strconv.Atoi(bedFixedTimeStr[3:5])
+	if err != nil {
+		log.Print("Invalid fixed min: ", err)
+		return bedTime, err
+	}
+
+	bedFixed := time.Date(bedYearNum, time.Month(bedMonthNum), bedDayNum, bedFixedHourNum, bedFixedMinNum, 0, 0, now.Location())
+	// 0時挟みの場合前日が定時の判定をします。
+	if 0 <= bedHourNum && bedHourNum < 12 {
+		bedFixed = bedFixed.AddDate(0, 0, -1)
+		// bathYearNum
+		// bathMonthNum
+		// bathDayNum
+		preDayNum := bedDayNum - 1
+		dayStr = fmt.Sprintf("%04d-%02d-%02d", bedYearNum, bedMonthNum, preDayNum)
+		log.Print(dayStr)
+	}
+	bedTimeNum := bedFixed.Sub(bed).Minutes()
+	log.Println(bedTimeNum)
+
+	updateQuery := `
+		UPDATE sleeps 
+		SET 
+		  bed=?,
+		  updated_at=?		  
+		WHERE 
+		  date=?`
+	stmt, err := db.Prepare(updateQuery)
+	if err != nil {
+		log.Println("bed update error: ", err)
+		return bedTime, err
+	}
+	defer func() {
+		statementCloseErr := stmt.Close()
+		if statementCloseErr != nil {
+			log.Println("bed update Statement Close Error:", err)
+			if err == nil {
+				err = statementCloseErr
+			}
+		}
+	}()
+
+	_, err = stmt.Exec(bedTimeNum, now, dayStr)
+	if err != nil {
+		log.Println("bed update error: ", err)
+		return bedTime, err
+	}
+	bedTime.Bed = int(bedTimeNum)
+	return bedTime, nil
 }
