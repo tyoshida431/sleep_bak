@@ -568,6 +568,7 @@ func updateWake(updateTime WakeTimeFromFront) (wakeTime WakeTime, err error) {
 		UPDATE sleeps 
 		SET 
 		  wake=?,
+		  wake_time=?,
 		  updated_at=?		  
 		WHERE 
 		  date=?`
@@ -586,7 +587,7 @@ func updateWake(updateTime WakeTimeFromFront) (wakeTime WakeTime, err error) {
 		}
 	}()
 
-	_, err = stmt.Exec(wakeTimeNum, now, dayStr)
+	_, err = stmt.Exec(wakeTimeNum, wake, now, dayStr)
 	if err != nil {
 		log.Println("sleeps update error: ", err)
 		return wakeTime, err
@@ -704,6 +705,7 @@ func updateBath(updateTime BathTimeFromFront) (bathTime BathTime, err error) {
 		UPDATE sleeps 
 		SET 
 		  bath=?,
+		  bath_time=?,
 		  updated_at=?		  
 		WHERE 
 		  date=?`
@@ -722,7 +724,7 @@ func updateBath(updateTime BathTimeFromFront) (bathTime BathTime, err error) {
 		}
 	}()
 
-	_, err = stmt.Exec(bathTimeNum, now, dayStr)
+	_, err = stmt.Exec(bathTimeNum, bath, now, dayStr)
 	if err != nil {
 		log.Println("bath update error: ", err)
 		return bathTime, err
@@ -839,6 +841,7 @@ func updateBed(updateTime BedTimeFromFront) (bedTime BedTime, err error) {
 		UPDATE sleeps 
 		SET 
 		  bed=?,
+		  sleep_time=?,
 		  updated_at=?		  
 		WHERE 
 		  date=?`
@@ -857,7 +860,7 @@ func updateBed(updateTime BedTimeFromFront) (bedTime BedTime, err error) {
 		}
 	}()
 
-	_, err = stmt.Exec(bedTimeNum, now, dayStr)
+	_, err = stmt.Exec(bedTimeNum, bed, now, dayStr)
 	if err != nil {
 		log.Println("bed update error: ", err)
 		return bedTime, err
