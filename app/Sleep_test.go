@@ -1,0 +1,186 @@
+package main
+
+import (
+	"log"
+	"testing"
+	"time"
+)
+
+func TestMakeDayForInsert(t *testing.T) {
+	tests := []struct {
+		name    string
+		year    int
+		month   int
+		day     int
+		wantErr bool
+	}{
+		{"ok", 2026, 9, 30, false},
+		{"bad 存在しない月日", 2026, 9, 31, true},
+		// TODO : テストデーター足す。
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := makeDayForInsert(test.year, test.month, test.day)
+			if (err != nil) != test.wantErr {
+				log.Println(err)
+			}
+			if test.wantErr {
+				return
+			}
+			now := time.Now()
+			want := time.Date(test.year, time.Month(test.month), test.day, 0, 0, 0, 0, now.Location())
+			if want.Before(got) {
+				t.Errorf("makeDayForInsert=%v; want %v", got, want)
+			} else if want.After(got) {
+				t.Errorf("makeDayForInsert=%v; want %v", got, want)
+			}
+		})
+	}
+}
+
+func TestChangeDateString(t *testing.T) {
+	tests := []struct {
+		name       string
+		datestring string
+		want       string
+		wantErr    bool
+	}{
+		{"ok", "2026-09-01T00:00:00+09:00", "2026-09-01", false},
+		{"bad JSTない", "2026-09-01T00:00:00", "2026-09-01", true},
+		{"bad 年欠け", "09-01T00:00:00+09:00", "2026-09-01", true},
+		{"bad 月欠け", "2026-01T00:00:00+09:00", "2026-09-01", true},
+		{"bad 形式違い", "20260901T00:00:00+09:00", "2026-09-01", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := changeDateString(test.datestring)
+			if (err != nil) != test.wantErr {
+				log.Println(err)
+			}
+			if test.wantErr {
+				return
+			}
+			if got != test.want {
+				t.Errorf("ChangeDateString=%s; want %s", got, test.want)
+			}
+		})
+	}
+}
+
+func TestShapeMonth(t *testing.T) {
+	tests := []struct {
+		name       string
+		datestring string
+		want       string
+		wantErr    bool
+	}{
+		{"ok", "202609", "2026-09-01", false},
+		{"bad 年だけ", "2026", "2026-09-01", true},
+		{"bad 年欠け", "02609", "2026-09-01", true},
+		{"bad 月欠け", "20269", "2026-09-01", true},
+		{"bad 形式違い", "2026-09-14", "2026-09-01", true},
+		{"bad 存在しない日付", "20260931", "2026-09-01", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := shapeMonth(test.datestring)
+			if (err != nil) != test.wantErr {
+				log.Println(err)
+			}
+			if test.wantErr {
+				return
+			}
+			if got != test.want {
+				t.Errorf("shapeMonth=%s; want %s", got, test.want)
+			}
+		})
+	}
+
+	now := time.Now().Format("2006-01-02")
+	testNow, err := shapeMonth("")
+	if err != nil {
+		log.Println(err)
+	}
+	if now != testNow {
+		t.Errorf("shapeMonth=%s; want %s", testNow, now)
+	}
+
+}
+
+func TestGetStartDay(t *testing.T) {
+	tmpMonth := "2026-09-01 00:00:00"
+	now := time.Now()
+	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
+	if err != nil {
+		log.Println("正データ作成失敗: ", err)
+	}
+	want := time.Date(monthDay.Year(), monthDay.Month(), 1, 0, 0, 0, 0, now.Location())
+
+	tests := []struct {
+		name       string
+		datestring string
+		wantErr    bool
+	}{
+		{"ok", "2026-09-14", false},
+		{"bad 年だけ", "2026", true},
+		{"bad 月まで", "2026-09", true},
+		{"bad 形式違い", "20260914", true},
+		{"bad 存在しない日付", "2026-09-31", true},
+		{"bad 空白", "", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := getStartDay(test.datestring)
+			if (err != nil) != test.wantErr {
+				log.Println(err)
+			}
+			if test.wantErr {
+				return
+			}
+			if got != want {
+				t.Errorf("getStartDay=%s; want %s", got, want)
+			}
+		})
+	}
+}
+
+func TestGetEndDay(t *testing.T) {
+	tmpMonth := "2026-09-30 23:59:59"
+	now := time.Now()
+	monthDay, err := time.Parse("2006-01-02 15:04:05", tmpMonth)
+	if err != nil {
+		log.Println("正データ作成失敗: ", err)
+	}
+	want := time.Date(monthDay.Year(), monthDay.Month(), 1, 23, 59, 59, 0, now.Location()).AddDate(0, 1, -1)
+
+	tests := []struct {
+		name       string
+		datestring string
+		wantErr    bool
+	}{
+		{"ok", "2026-09-14", false},
+		{"bad 年だけ", "2026", true},
+		{"bad 月まで", "2026-09", true},
+		{"bad 形式違い", "20260914", true},
+		{"bad 存在しない日付", "2026-09-31", true},
+		{"bad 空白", "", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := getEndDay(test.datestring)
+			if (err != nil) != test.wantErr {
+				log.Println(err)
+			}
+			if test.wantErr {
+				return
+			}
+			if got != want {
+				t.Errorf("getEndDay=%s; want %s", got, want)
+			}
+		})
+	}
+}

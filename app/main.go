@@ -9,7 +9,10 @@ import (
 func main() {
 	var err error
 	router := gin.Default()
-	router.SetTrustedProxies(nil)
+	err = router.SetTrustedProxies(nil)
+	if err != nil {
+		log.Fatal("Set Proxies error: ", err)
+	}
 	cors, err := getCorsConfig()
 	if err == nil {
 		router.Use(cors)
@@ -33,6 +36,45 @@ func main() {
 			sleeps, err := updateSleep(sleeps)
 			if err == nil {
 				c.JSON(200, sleeps)
+			} else {
+				c.JSON(500, gin.H{"message": err.Error()})
+			}
+		}
+	})
+	router.POST("/wake", func(c *gin.Context) {
+		var wakeTime WakeTimeFromFront
+		if err := c.ShouldBindJSON(&wakeTime); err != nil {
+			c.JSON(500, gin.H{"message": err.Error()})
+		} else {
+			wake, err := updateWake(wakeTime)
+			if err == nil {
+				c.JSON(200, wake)
+			} else {
+				c.JSON(500, gin.H{"message": err.Error()})
+			}
+		}
+	})
+	router.POST("/bath", func(c *gin.Context) {
+		var bathTime BathTimeFromFront
+		if err := c.ShouldBindJSON(&bathTime); err != nil {
+			c.JSON(500, gin.H{"message": err.Error()})
+		} else {
+			bath, err := updateBath(bathTime)
+			if err == nil {
+				c.JSON(200, bath)
+			} else {
+				c.JSON(500, gin.H{"message": err.Error()})
+			}
+		}
+	})
+	router.POST("/bed", func(c *gin.Context) {
+		var bedTime BedTimeFromFront
+		if err := c.ShouldBindJSON(&bedTime); err != nil {
+			c.JSON(500, gin.H{"message": err.Error()})
+		} else {
+			bed, err := updateBed(bedTime)
+			if err == nil {
+				c.JSON(200, bed)
 			} else {
 				c.JSON(500, gin.H{"message": err.Error()})
 			}
