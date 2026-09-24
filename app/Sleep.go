@@ -113,8 +113,8 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	    date>=? AND date<=?`
 	sleepRows, err := db.Query(query, startDay, endDay)
 	if err != nil {
-		log.Println("select sleeps query error: ", err)
-		return nil, fmt.Errorf("select sleeps query error: %v", err)
+		log.Println("Select Sleeps Query Error: ", err)
+		return nil, fmt.Errorf("select Sleeps Query Error: %v", err)
 	}
 	// //ID          int    `json:"id"`
 	// //Date        string `json:"date"`
@@ -137,8 +137,8 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 			&sleep.Sleep,
 			&sleep.Deep_sleep,
 			&sleep.Description); err != nil {
-			log.Println("Sleep Row Scan Error: ", err)
-			return nil, fmt.Errorf("scan the sleep error: %v", err)
+			log.Println("sleep Row Scan Error: ", err)
+			return nil, fmt.Errorf("scan The Sleep Error: %v", err)
 		}
 		sleep.DateStr, err = changeDateString(sleep.Date)
 		if err != nil {
@@ -149,7 +149,7 @@ func getSleep(monthFromURLQuery string) ([]Sleep, error) {
 	}
 	if err := sleepRows.Err(); err != nil {
 		log.Println("sleep Row Error: ", err)
-		return nil, fmt.Errorf("scan sleep error: %v", err)
+		return nil, fmt.Errorf("scan Sleep Error: %v", err)
 	}
 	return sleeps, err
 }
@@ -163,19 +163,19 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 	    	date>=? AND date<=?`
 	countRows, err := db.Query(countQuery, startDay, endDay)
 	if err != nil {
-		log.Println("sleeps month exist count query error: ", err)
-		return fmt.Errorf("sleeps month exist count query error: %v", err)
+		log.Println("Sleeps Month Exist Count Query Error: ", err)
+		return fmt.Errorf("sleeps Month Exist Count Query Error: %v", err)
 	}
 	var count int
 	for countRows.Next() {
 		if err := countRows.Scan(&count); err != nil {
-			log.Println("sleeps month exist count scan error: ", err)
-			return fmt.Errorf("sleeps month exist count scan error: %v", err)
+			log.Println("Sleeps Month Exist Count Scan Error: ", err)
+			return fmt.Errorf("sleeps Month Exist Count Scan Error: %v", err)
 		}
 	}
 	if err := countRows.Err(); err != nil {
-		log.Println("sleeps month exist count rows error: ", err)
-		return fmt.Errorf("sleeps month exist count rows error: %v", err)
+		log.Println("Sleeps Month Exist Count Rows Error: ", err)
+		return fmt.Errorf("sleeps Month Exist Count Rows Error: %v", err)
 	}
 	if count == 0 {
 		year := startDay.Year()
@@ -234,15 +234,15 @@ func makeNewMonth(db *sqlx.DB, startDay time.Time, endDay time.Time) error {
 func makeDayForInsert(year int, month int, day int) (makedDayTime time.Time, err error) {
 	if year <= 2000 {
 		log.Print("Invalid year: ", year)
-		return time.Time{}, fmt.Errorf("Invalid year num: %v", year)
+		return time.Time{}, fmt.Errorf("invalid Year Num: %v", year)
 	}
 	if month <= 0 && 13 <= month {
 		log.Print("Invalid month: ", month)
-		return time.Time{}, fmt.Errorf("Invalid month num: %d", month)
+		return time.Time{}, fmt.Errorf("invalid Month Num: %d", month)
 	}
 	if day <= 0 && 32 <= day {
 		log.Print("Invalid day: ", day)
-		return time.Time{}, fmt.Errorf("Invalid day num: %d", day)
+		return time.Time{}, fmt.Errorf("invalid Day Num: %d", day)
 	}
 	now := time.Now()
 	makedDayTime = time.Date(year, time.Month(month), day, 0, 0, 0, 0, now.Location())
@@ -251,7 +251,7 @@ func makeDayForInsert(year int, month int, day int) (makedDayTime time.Time, err
 	makedDay := makedDayTime.Day()
 	if year != makedYear || month != makedMonth || day != makedDay {
 		log.Print("Invalid Pair of Year, month, Day: ", year, month, day)
-		return time.Time{}, fmt.Errorf("Invalid Pair year, month, day: %d, %d, %d", year, month, day)
+		return time.Time{}, fmt.Errorf("invalid Pair Year, Month, Day: %d, %d, %d", year, month, day)
 	}
 	return makedDayTime, nil
 }
@@ -372,12 +372,12 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 	var tmpYear = updateSleeps[0].Date[:4]
 	var tmpMonth = updateSleeps[0].Date[5:7]
 	if len(tmpYear) != 4 {
-		log.Println("Invalid YearStr: ", tmpYear)
-		return nil, fmt.Errorf("Invalid YearStr: %v", tmpYear)
+		log.Println("invalid YearStr: ", tmpYear)
+		return nil, fmt.Errorf("invalid YearStr: %v", tmpYear)
 	}
 	if len(tmpMonth) != 2 {
-		log.Println("Invalid MonthStr: ", tmpMonth)
-		return nil, fmt.Errorf("Invalid MonthStr: %v", tmpMonth)
+		log.Println("invalid MonthStr: ", tmpMonth)
+		return nil, fmt.Errorf("invalid MonthStr: %v", tmpMonth)
 	}
 	var resultMonth = tmpYear + tmpMonth
 	sleeps, err = getSleep(resultMonth)
@@ -385,14 +385,14 @@ func updateSleep(sleepsFromFront []SleepFromFront) (sleeps []Sleep, err error) {
 }
 func changeDateString(dateStringFromDB string) (dateStringToDisp string, err error) {
 	if len(dateStringFromDB) != 25 {
-		log.Println("Invalid date style: ", dateStringFromDB)
-		return "", fmt.Errorf("Invalid date style: %v", dateStringFromDB)
+		log.Println("invalid date style: ", dateStringFromDB)
+		return "", fmt.Errorf("invalid Date Style: %v", dateStringFromDB)
 	}
 	dateStringToDisp = dateStringFromDB[:10]
 	dateSlice := []rune(dateStringToDisp)
 	if dateSlice[4] != '-' || dateSlice[7] != '-' {
-		log.Println("Invalid date style: ", dateStringFromDB)
-		return "", fmt.Errorf("Invalid date style: %v", dateStringFromDB)
+		log.Println("invalid date style: ", dateStringFromDB)
+		return "", fmt.Errorf("invalid Date Style: %v", dateStringFromDB)
 	}
 	return dateStringToDisp, nil
 }
@@ -403,34 +403,34 @@ func shapeMonth(monthFromURLQuery string) (month string, err error) {
 	} else {
 		// yyyymmの形決め打ちで作成する。
 		if len(monthFromURLQuery) != 6 {
-			log.Println("Invalid month style: ", monthFromURLQuery)
-			return "", fmt.Errorf("Invalid month style: %v", monthFromURLQuery)
+			log.Println("invalid month style: ", monthFromURLQuery)
+			return "", fmt.Errorf("invalid Month Style: %v", monthFromURLQuery)
 		}
 		tmpYearStr := monthFromURLQuery[:4]
 		tmpMonthStr := monthFromURLQuery[4:]
 		if len(tmpYearStr) != 4 {
-			log.Println("Invalid Year: ", tmpYearStr)
-			return "", fmt.Errorf("Invalid Year: %v", tmpYearStr)
+			log.Println("invalid Year: ", tmpYearStr)
+			return "", fmt.Errorf("invalid Year: %v", tmpYearStr)
 		}
 		if len(tmpMonthStr) != 2 {
-			log.Println("Invalid Month: ", tmpMonthStr)
-			return "", fmt.Errorf("Invalid Month: %v", tmpMonthStr)
+			log.Println("invalid Month: ", tmpMonthStr)
+			return "", fmt.Errorf("invalid Month: %v", tmpMonthStr)
 		}
 		tmpYearNum, err := strconv.Atoi(tmpYearStr)
 		if err != nil {
 			log.Println("Year Conv Error: ", err)
 			log.Println("Error Year Str: ", tmpYearStr)
-			return "", fmt.Errorf("Invalid Year: %v", err)
+			return "", fmt.Errorf("invalid Year: %v", err)
 		}
 		tmpMonthNum, err := strconv.Atoi(tmpMonthStr)
 		if err != nil {
 			log.Println("Month Conv Error: ", err)
 			log.Println("Error Month Str: ", tmpMonthStr)
-			return "", fmt.Errorf("Invalid Month: %v", err)
+			return "", fmt.Errorf("invalid Month: %v", err)
 		}
 		if tmpMonthNum <= 0 || 12 < tmpMonthNum {
 			log.Println("Invalid Month Error: ", tmpMonthNum)
-			return "", fmt.Errorf("Invalid Month: %d", tmpMonthNum)
+			return "", fmt.Errorf("invalid Month: %d", tmpMonthNum)
 		}
 		month = time.Date(tmpYearNum, time.Month(tmpMonthNum), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
 	}
@@ -485,24 +485,19 @@ func updateWake(updateTime WakeTimeFromFront) (wakeTime WakeTime, err error) {
 	    	FIXED_HOUR_NAME=?`
 	wakeFixedTimeRows, err := db.Query(wakeFixedTimeQuery, "起床")
 	if err != nil {
-		log.Println("wake Fixed Time query error: ", err)
-		return wakeTime, fmt.Errorf("wake Fixed Time query error: %v", err)
+		log.Println("Wake Fixed Time Query Error: ", err)
+		return wakeTime, fmt.Errorf("wake Fixed Time Query Error: %v", err)
 	}
 	var wakeFixedTimeStr string
 	for wakeFixedTimeRows.Next() {
 		if err := wakeFixedTimeRows.Scan(&wakeFixedTimeStr); err != nil {
-			log.Println("wake Fixed Time scan error: ", err)
-			f := fmt.Errorf("wake Fixed Time scan error: %v", err)
-			log.Print(f)
-			if f != nil {
-				log.Print("not null.")
-			}
-			return wakeTime, fmt.Errorf("wake Fixed Time scan error: %v", err)
+			log.Println("Wake Fixed Time Scan Error: ", err)
+			return wakeTime, fmt.Errorf("wake Fixed Time Scan Error: %v", err)
 		}
 	}
 	if err := wakeFixedTimeRows.Err(); err != nil {
 		log.Println("wake Fixed Time rows error: ", err)
-		return wakeTime, fmt.Errorf("wake Fixed Time rows error: %v", err)
+		return wakeTime, fmt.Errorf("wake Fixed Time Rows Error: %v", err)
 	}
 
 	wakeTimeStr := updateTime.WakeTime
@@ -512,35 +507,35 @@ func updateWake(updateTime WakeTimeFromFront) (wakeTime WakeTime, err error) {
 	// 2026-09-22T13:32:00:00 決め打ち。
 	// 01234567890123456
 	if len(wakeTimeStr) != 22 {
-		log.Print("Invalid Wake Fixed Time:", wakeTimeStr)
-		return wakeTime, fmt.Errorf("Invalid Wake Fixed Time: %s", wakeTimeStr)
+		log.Print("invalid Wake Fixed Time:", wakeTimeStr)
+		return wakeTime, fmt.Errorf("invalid Wake Fixed Time: %s", wakeTimeStr)
 	}
 
 	dayStr := wakeTimeStr[:10]
 	log.Print(dayStr)
 	wakeYearNum, err := strconv.Atoi(dayStr[:4])
 	if err != nil {
-		log.Print("Invalid year: ", err)
+		log.Print("invalid Year: ", err)
 		return wakeTime, err
 	}
 	wakeMonthNum, err := strconv.Atoi(dayStr[5:7])
 	if err != nil {
-		log.Print("Invalid month: ", err)
+		log.Print("invalid Month: ", err)
 		return wakeTime, err
 	}
 	wakeDayNum, err := strconv.Atoi(dayStr[8:10])
 	if err != nil {
-		log.Print("Invalid day: ", err)
+		log.Print("invalid day: ", err)
 		return wakeTime, err
 	}
 	wakeHourNum, err := strconv.Atoi(wakeTimeStr[11:13])
 	if err != nil {
-		log.Print("Invalid Hour: ", err)
+		log.Print("invalid Hour: ", err)
 		return wakeTime, err
 	}
 	wakeMinNum, err := strconv.Atoi(wakeTimeStr[14:16])
 	if err != nil {
-		log.Print("Invalid min: ", err)
+		log.Print("invalid min: ", err)
 		return wakeTime, err
 	}
 
@@ -551,12 +546,12 @@ func updateWake(updateTime WakeTimeFromFront) (wakeTime WakeTime, err error) {
 	// 01234567
 	wakeFixedHourNum, err := strconv.Atoi(wakeFixedTimeStr[0:2])
 	if err != nil {
-		log.Print("Invalid fixed hour: ", err)
+		log.Print("invalid fixed hour: ", err)
 		return wakeTime, err
 	}
 	wakeFixedMinNum, err := strconv.Atoi(wakeFixedTimeStr[3:5])
 	if err != nil {
-		log.Print("Invalid fixed min: ", err)
+		log.Print("invalid fixed min: ", err)
 		return wakeTime, err
 	}
 
@@ -620,19 +615,19 @@ func updateBath(updateTime BathTimeFromFront) (bathTime BathTime, err error) {
 	    	FIXED_HOUR_NAME=?`
 	bathFixedTimeRows, err := db.Query(bathFixedTimeQuery, "入浴")
 	if err != nil {
-		log.Println("bath Fixed Time query error: ", err)
-		return bathTime, fmt.Errorf("bath Fixed Time query error: %v", err)
+		log.Println("bath Fixed Time Query Error: ", err)
+		return bathTime, fmt.Errorf("bath Fixed Time Query Error: %v", err)
 	}
 	var bathFixedTimeStr string
 	for bathFixedTimeRows.Next() {
 		if err := bathFixedTimeRows.Scan(&bathFixedTimeStr); err != nil {
-			log.Println("bath Fixed Time scan error: ", err)
-			return bathTime, fmt.Errorf("bath Fixed Time scan error: %v", err)
+			log.Println("Bath Fixed Time Scan Error: ", err)
+			return bathTime, fmt.Errorf("bath Fixed Time Scan Error: %v", err)
 		}
 	}
 	if err := bathFixedTimeRows.Err(); err != nil {
-		log.Println("bath Fixed Time rows error: ", err)
-		return bathTime, fmt.Errorf("bath Fixed Time rows error: %v", err)
+		log.Println("Bath Fixed Time Rows Error: ", err)
+		return bathTime, fmt.Errorf("bath Fixed Time Rows Error: %v", err)
 	}
 
 	bathTimeStr := updateTime.BathTime
@@ -640,34 +635,34 @@ func updateBath(updateTime BathTimeFromFront) (bathTime BathTime, err error) {
 
 	// 0時またぎどうするかです。TODO。
 	if len(bathTimeStr) != 22 {
-		log.Print("Invalid bath Fixed Time:", bathTimeStr)
-		return bathTime, fmt.Errorf("Invalid bath Fixed Time: %s", bathTimeStr)
+		log.Print("invalid Bath Fixed Time:", bathTimeStr)
+		return bathTime, fmt.Errorf("invalid Bath Fixed Time: %s", bathTimeStr)
 	}
 
 	dayStr := bathTimeStr[:10]
 	bathYearNum, err := strconv.Atoi(dayStr[:4])
 	if err != nil {
-		log.Print("Invalid year: ", err)
+		log.Print("invalid year: ", err)
 		return bathTime, err
 	}
 	bathMonthNum, err := strconv.Atoi(dayStr[5:7])
 	if err != nil {
-		log.Print("Invalid month: ", err)
+		log.Print("invalid month: ", err)
 		return bathTime, err
 	}
 	bathDayNum, err := strconv.Atoi(dayStr[8:10])
 	if err != nil {
-		log.Print("Invalid day: ", err)
+		log.Print("invalid day: ", err)
 		return bathTime, err
 	}
 	bathHourNum, err := strconv.Atoi(bathTimeStr[11:13])
 	if err != nil {
-		log.Print("Invalid Hour: ", err)
+		log.Print("invalid Hour: ", err)
 		return bathTime, err
 	}
 	bathMinNum, err := strconv.Atoi(bathTimeStr[14:16])
 	if err != nil {
-		log.Print("Invalid min: ", err)
+		log.Print("invalid min: ", err)
 		return bathTime, err
 	}
 
@@ -678,12 +673,12 @@ func updateBath(updateTime BathTimeFromFront) (bathTime BathTime, err error) {
 	// 01234567
 	bathFixedHourNum, err := strconv.Atoi(bathFixedTimeStr[0:2])
 	if err != nil {
-		log.Print("Invalid fixed hour: ", err)
+		log.Print("invalid fixed hour: ", err)
 		return bathTime, err
 	}
 	bathFixedMinNum, err := strconv.Atoi(bathFixedTimeStr[3:5])
 	if err != nil {
-		log.Print("Invalid fixed min: ", err)
+		log.Print("invalid fixed min: ", err)
 		return bathTime, err
 	}
 
@@ -757,53 +752,53 @@ func updateBed(updateTime BedTimeFromFront) (bedTime BedTime, err error) {
 	    	FIXED_HOUR_NAME=?`
 	bedFixedTimeRows, err := db.Query(bedFixedTimeQuery, "就寝")
 	if err != nil {
-		log.Println("bed Fixed Time query error: ", err)
-		return bedTime, fmt.Errorf("bed Fixed Time query error: %v", err)
+		log.Println("Bed Fixed Time Query Error: ", err)
+		return bedTime, fmt.Errorf("bed Fixed Time Query Error: %v", err)
 	}
 	var bedFixedTimeStr string
 	for bedFixedTimeRows.Next() {
 		if err := bedFixedTimeRows.Scan(&bedFixedTimeStr); err != nil {
-			log.Println("bed Fixed Time scan error: ", err)
-			return bedTime, fmt.Errorf("bed Fixed Time scan error: %v", err)
+			log.Println("Bed Fixed Time Scan Error: ", err)
+			return bedTime, fmt.Errorf("bed Fixed Time Scan Error: %v", err)
 		}
 	}
 	if err := bedFixedTimeRows.Err(); err != nil {
-		log.Println("bed Fixed Time rows error: ", err)
-		return bedTime, fmt.Errorf("bed Fixed Time rows error: %v", err)
+		log.Println("Bed Fixed Time Rows Error: ", err)
+		return bedTime, fmt.Errorf("bed Fixed Time Rows Error: %v", err)
 	}
 
 	bedTimeStr := updateTime.BedTime
 	now := time.Now()
 
 	if len(bedTimeStr) != 22 {
-		log.Print("Invalid bed Fixed Time:", bedTimeStr)
-		return bedTime, fmt.Errorf("Invalid bed Fixed Time: %s", bedTimeStr)
+		log.Print("invalid Bed Fixed Time:", bedTimeStr)
+		return bedTime, fmt.Errorf("invalid Bed Fixed Time: %s", bedTimeStr)
 	}
 
 	dayStr := bedTimeStr[:10]
 	bedYearNum, err := strconv.Atoi(dayStr[:4])
 	if err != nil {
-		log.Print("Invalid year: ", err)
+		log.Print("invalid year: ", err)
 		return bedTime, err
 	}
 	bedMonthNum, err := strconv.Atoi(dayStr[5:7])
 	if err != nil {
-		log.Print("Invalid month: ", err)
+		log.Print("invalid month: ", err)
 		return bedTime, err
 	}
 	bedDayNum, err := strconv.Atoi(dayStr[8:10])
 	if err != nil {
-		log.Print("Invalid day: ", err)
+		log.Print("invalid day: ", err)
 		return bedTime, err
 	}
 	bedHourNum, err := strconv.Atoi(bedTimeStr[11:13])
 	if err != nil {
-		log.Print("Invalid Hour: ", err)
+		log.Print("invalid Hour: ", err)
 		return bedTime, err
 	}
 	bedMinNum, err := strconv.Atoi(bedTimeStr[14:16])
 	if err != nil {
-		log.Print("Invalid min: ", err)
+		log.Print("invalid min: ", err)
 		return bedTime, err
 	}
 
@@ -814,12 +809,12 @@ func updateBed(updateTime BedTimeFromFront) (bedTime BedTime, err error) {
 	// 01234567
 	bedFixedHourNum, err := strconv.Atoi(bedFixedTimeStr[0:2])
 	if err != nil {
-		log.Print("Invalid fixed hour: ", err)
+		log.Print("invalid fixed hour: ", err)
 		return bedTime, err
 	}
 	bedFixedMinNum, err := strconv.Atoi(bedFixedTimeStr[3:5])
 	if err != nil {
-		log.Print("Invalid fixed min: ", err)
+		log.Print("invalid fixed min: ", err)
 		return bedTime, err
 	}
 

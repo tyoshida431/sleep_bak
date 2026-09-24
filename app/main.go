@@ -9,7 +9,10 @@ import (
 func main() {
 	var err error
 	router := gin.Default()
-	router.SetTrustedProxies(nil)
+	err = router.SetTrustedProxies(nil)
+	if err != nil {
+		log.Fatal("Set Proxies error: ", err)
+	}
 	cors, err := getCorsConfig()
 	if err == nil {
 		router.Use(cors)
