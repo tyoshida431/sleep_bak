@@ -689,8 +689,12 @@ func updateBath(updateTime BathTimeFromFront) (bathTime BathTime, err error) {
 		// bathYearNum
 		// bathMonthNum
 		// bathDayNum
-		preDayNum := bathDayNum - 1
-		dayStr = fmt.Sprintf("%04d-%02d-%02d", bathYearNum, bathMonthNum, preDayNum)
+		if bathDayNum == 1 {
+			dayStr = fmt.Sprintf("%04d-%02d-%02d", bathYearNum, bathMonthNum-1, bathFixed.Day())
+		} else {
+			preDayNum := bathDayNum - 1
+			dayStr = fmt.Sprintf("%04d-%02d-%02d", bathYearNum, bathMonthNum, preDayNum)
+		}
 		log.Print(dayStr)
 	}
 	bathTimeNum := bathFixed.Sub(bath).Minutes()
@@ -825,9 +829,12 @@ func updateBed(updateTime BedTimeFromFront) (bedTime BedTime, err error) {
 		// bathYearNum
 		// bathMonthNum
 		// bathDayNum
-		preDayNum := bedDayNum - 1
-		dayStr = fmt.Sprintf("%04d-%02d-%02d", bedYearNum, bedMonthNum, preDayNum)
-		log.Print(dayStr)
+		if bedDayNum == 1 {
+			dayStr = fmt.Sprintf("%04d-%02d-%02d", bedYearNum, bedMonthNum-1, bedFixed.Day())
+		} else {
+			preDayNum := bedDayNum - 1
+			dayStr = fmt.Sprintf("%04d-%02d-%02d", bedYearNum, bedMonthNum, preDayNum)
+		}
 	}
 	bedTimeNum := bedFixed.Sub(bed).Minutes()
 	log.Println(bedTimeNum)
